@@ -1,5 +1,5 @@
 from .connection import NHCConnection
-from .entities import NHCLight, NHCCover, NHCFan
+from . import NHCLight, NHCCover, NHCFan
 import logging
 import json
 import asyncio
