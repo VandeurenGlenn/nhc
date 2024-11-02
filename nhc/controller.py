@@ -1,7 +1,7 @@
 from .connection import NHCConnection
 from .light import NHCLight
 from .cover import NHCCover
-from fan import NHCFan
+from .fan import NHCFan
 import logging
 import json
 import asyncio
