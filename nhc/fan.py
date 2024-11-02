@@ -1,8 +1,8 @@
 import __future__
 
-from ..action import NHCAction
-from ..event import NHCEvent
-from ..const import PRESET_MODES
+from .action import NHCAction
+from .event import NHCEvent
+from .const import PRESET_MODES
 
 class NHCFan(NHCAction):
   def __init__(self, controller, action):

@@ -1,5 +1,7 @@
 from .connection import NHCConnection
-from . import NHCLight, NHCCover, NHCFan
+from .light import NHCLight
+from .cover import NHCCover
+from fan import NHCFan
 import logging
 import json
 import asyncio
@@ -8,8 +10,9 @@ _LOGGER = logging.getLogger(__name__)
 
 class NHCController:
     def __init__(self, host, port):
-        self.host = host
-        self.port = port | 8000
+        self.event_handler = None
+        self._host = host
+        self._port = port | 8000
         self._connection = NHCConnection(host, self.port)
         self._entities: list[NHCLight | NHCCover | NHCFan] = []
 
@@ -33,6 +36,13 @@ class NHCController:
               self._entities.append(entity)
 
         _LOGGER.debug('Controller initialized')
+
+    @property
+    def host(self):
+        return self._host
+
+    def port(self):
+        return self._port
 
     @property
     def locations(self):

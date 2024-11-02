@@ -1,6 +1,6 @@
-from ..action import NHCAction
-from ..const import COVER_OPEN, COVER_CLOSE, COVER_STOP
-from ..event import NHCEvent
+from .action import NHCAction
+from .const import COVER_OPEN, COVER_CLOSE, COVER_STOP
+from .event import NHCEvent
 
 class NHCCover(NHCAction):
     def __init__(self, controller, action):

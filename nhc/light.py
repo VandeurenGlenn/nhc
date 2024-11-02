@@ -1,5 +1,5 @@
-from ..action import NHCAction
-from ..event import NHCEvent
+from .action import NHCAction
+from .event import NHCEvent
 
 class NHCLight(NHCAction):
     def __init__(self, controller, action):
