@@ -1,5 +1,5 @@
 from .connection import NHCConnection
-from .action import NHCAction
+from .entities import NHCLight, NHCCover, NHCFan
 import logging
 import json
 import asyncio
@@ -11,7 +11,7 @@ class NHCController:
         self.host = host
         self.port = port | 8000
         self._connection = NHCConnection(host, self.port)
-        self._entities: list[NHCAction] = []
+        self._entities: list[NHCLight | NHCCover | NHCFan] = []
 
         actions = self._send('{"cmd": "listactions"}')
         self._locations = self._send('{"cmd": "listlocations"}')
@@ -21,8 +21,16 @@ class NHCController:
         self._system_info = self._send('{"cmd": "systeminfo"}')
 
         for (_action) in actions:
-            action = NHCAction(_action, self)
-            self._entities.append(NHCAction(self, action))
+            entity = None
+            if (_action["type"] == 1 or _action["type"] == 2):
+                entity = NHCLight(self, _action)
+            elif (_action["type"] == 3):
+                entity = NHCFan(self, _action)
+            elif (_action["type"] == 4):
+                entity = NHCCover(self, _action)
+
+            if (entity is not None):
+              self._entities.append(entity)
 
         _LOGGER.debug('Controller initialized')
 
