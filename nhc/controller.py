@@ -15,7 +15,7 @@ class NHCController:
         self._host = host
         self._port = port | 8000
         self._connection = NHCConnection(host, self.port)
-        self._entities: list[NHCLight | NHCCover | NHCFan] = []
+        self._actions: list[NHCLight | NHCCover | NHCFan] = []
         self._mac = getmacbyip(host)
 
         actions = self._send('{"cmd": "listactions"}')
@@ -35,7 +35,7 @@ class NHCController:
                 entity = NHCCover(self, _action)
 
             if (entity is not None):
-              self._entities.append(entity)
+              self._actions.append(entity)
 
         _LOGGER.debug('Controller initialized')
 
@@ -48,10 +48,6 @@ class NHCController:
         return self._port
 
     @property
-    def mac_address(self):
-        return self._mac
-
-    @property
     def locations(self):
         return self._locations
 
@@ -60,8 +56,8 @@ class NHCController:
         return self._system_info
 
     @property
-    def entities(self):
-        return self._entities
+    def actions(self):
+        return self._actions
 
     def _event_handler(self, event):
         """Handle events."""
