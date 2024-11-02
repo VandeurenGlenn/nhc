@@ -5,6 +5,7 @@ from fan import NHCFan
 import logging
 import json
 import asyncio
+from scapy import getmacbyip
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ class NHCController:
         self._port = port | 8000
         self._connection = NHCConnection(host, self.port)
         self._entities: list[NHCLight | NHCCover | NHCFan] = []
+        self._mac = getmacbyip(host)
 
         actions = self._send('{"cmd": "listactions"}')
         self._locations = self._send('{"cmd": "listlocations"}')
@@ -41,8 +43,13 @@ class NHCController:
     def host(self):
         return self._host
 
+    @property
     def port(self):
         return self._port
+
+    @property
+    def mac_address(self):
+        return self._mac
 
     @property
     def locations(self):
