@@ -1,5 +1,4 @@
 from .action import NHCAction
-from .event import NHCEvent
 
 class NHCLight(NHCAction):
     def __init__(self, controller, action):
@@ -10,15 +9,15 @@ class NHCLight(NHCAction):
         """Is on."""
         return self._state > 0
 
-    def turn_on(self, brightness=255) -> NHCEvent:
+    def turn_on(self, brightness=255):
         """Turn On."""
         return self._controller.execute(self.action_id, brightness)
 
-    def turn_off(self) -> NHCEvent:
+    def turn_off(self):
         """Turn off."""
         return self._controller.execute(self.action_id, 0)
 
-    def toggle(self) -> NHCEvent:
+    def toggle(self):
         """Toggle on/off."""
         if self.is_on:
             return self.turn_off()

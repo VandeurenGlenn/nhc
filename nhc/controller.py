@@ -2,21 +2,26 @@ from .connection import NHCConnection
 from .light import NHCLight
 from .cover import NHCCover
 from .fan import NHCFan
-import logging
 import json
 import asyncio
-_LOGGER = logging.getLogger(__name__)
+import inspect
 
 class NHCController:
     def __init__(self, host, port):
-        self.event_handler = None
         self._host = host
+        self._callback = []
         self._port = port | 8000
         self._connection = NHCConnection(host, self.port)
         self._actions: list[NHCLight | NHCCover | NHCFan] = []
+        self._locations = {}
 
         actions = self._send('{"cmd": "listactions"}')
-        self._locations = self._send('{"cmd": "listlocations"}')
+
+        locations = self._send('{"cmd": "listlocations"}')
+
+        for location in locations:
+            self._locations[location["id"]] = location["name"]
+
         # self._thermostats = self._send('{"cmd": "listthermostats"}')
         # self._energy = self._send('{"cmd": "listenergy"}')µ
 
@@ -34,7 +39,7 @@ class NHCController:
             if (entity is not None):
               self._actions.append(entity)
 
-        _LOGGER.debug('Controller initialized')
+        self.start_events()
 
     @property
     def host(self):
@@ -56,16 +61,17 @@ class NHCController:
     def actions(self):
         return self._actions
 
-    def _event_handler(self, event):
-        """Handle events."""
-        _LOGGER.debug("Event: %s", event)
-        if (self.event_handler) is not None:
-            self.event_handler(event)
+    def add_callback(self, func):
+        """Add callback function for events."""
+        if inspect.isfunction(func):
+            self._callback.append(func)
+        else:
+            raise Exception("Only use functions with 1 parameter as callback.")
+
 
     def _send(self, data):
         response = json.loads(self._connection.send(data))
         if 'error' in response['data']:
-            _LOGGER.warning(response['data']['error'])
             error = response['data']['error']
             if error:
                 raise Exception(error['error'])
@@ -73,29 +79,32 @@ class NHCController:
         return response['data']
 
     def execute(self, id, value):
-        return self._send('{"cmd": %s, "id": %s, "value1": %s}' % ("executeactions", str(id), str(value)))
+        return self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
 
     def start_events(self):
         """Start events."""
-        self._listen_task = asyncio.create_task(self.listen())
+        self._listen_task = asyncio.create_task(self._listen())
 
-    async def listen(self):
-        """Listen for events."""
+    async def _listen(self):
+        """
+        Listen for events. When an event is received, call callback functions.
+        """
         s = '{"cmd":"startevents"}'
-        reader, writer = await asyncio.open_connection(self._host, self._port)
 
-        writer.write(s.encode())
-        await writer.drain()
+        try:
+            self._reader, self._writer = \
+                await asyncio.open_connection(self._host, self._port)
 
-        async for line in reader:
-            try:
+            self._writer.write(s.encode())
+            await self._writer.drain()
+
+            async for line in self._reader:
                 message = json.loads(line.decode())
-                _LOGGER.debug("Received: %s", message)
-                if message != "b\r":
-                    if "event" in message and message["event"] == "listactions":
-                        for _action in message["data"]:
-                            self._event_handler(_action)
-            except any:
-                _LOGGER.debug("exception")
-                _LOGGER.debug(line)
-
+                if "event" in message \
+                        and message["event"] != "startevents":
+                    for data in message["data"]:
+                        for func in self._callback:
+                            await func(data)
+        finally:
+            self._writer.close()
+            await self._writer.wait_closed()

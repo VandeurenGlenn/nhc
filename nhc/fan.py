@@ -1,7 +1,4 @@
-import __future__
-
 from .action import NHCAction
-from .event import NHCEvent
 from .const import PRESET_MODES
 
 class NHCFan(NHCAction):
@@ -14,5 +11,7 @@ class NHCFan(NHCAction):
         if value == self._state:
             return mode
 
-  def set_mode(self, speed: str) -> NHCEvent:
+    return PRESET_MODES['low']
+
+  def set_mode(self, speed: str):
       return self._controller.execute(self.action_id, PRESET_MODES[speed])
