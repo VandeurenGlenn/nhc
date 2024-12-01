@@ -69,7 +69,7 @@ class NHCController:
         for action in actions:
             for _action in self._actions:
                 if _action.id == action["id"]:
-                    _action.update_state(action.value1)
+                    _action.update_state(action["value1"])
 
     def add_callback(self, func):
         """Add callback function for events."""
