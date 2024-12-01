@@ -13,7 +13,7 @@ setuptools.setup(
     long_description='Niko Home Control Client Library',
     packages=setuptools.find_packages(),
     zip_safe=False,
-    install_requires=['nclib', 'scapy'],
+    install_requires=['nclib'],
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
