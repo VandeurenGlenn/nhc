@@ -4,7 +4,7 @@ class NHCAction:
     def __init__(self, controller, action):
         """Init Niko Action."""
         self._state = action["value1"]
-        self._action_id = action["id"]
+        self._id = action["id"]
         self._type = action["type"]
         self._name = action["name"]
         self._controller = controller
@@ -26,9 +26,9 @@ class NHCAction:
         return self._name
 
     @property
-    def action_id(self):
+    def id(self):
         """A Niko Action action_id."""
-        return self._action_id
+        return self._id
 
     @property
     def action_type(self):
