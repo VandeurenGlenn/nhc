@@ -1,3 +1,2 @@
 setuptools==65.5.1
 nclib==1.0.0
-scapy==2.6.0
