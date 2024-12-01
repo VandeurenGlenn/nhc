@@ -61,6 +61,16 @@ class NHCController:
     def actions(self):
         return self._actions
 
+    def update(self):
+        """Update all actions."""
+        # note this is only needed when not using events.
+        actions = self._send('{"cmd": "listactions"}')
+
+        for action in actions:
+            for _action in self._actions:
+                if _action.id == action["id"]:
+                    _action.update_state(action.value1)
+
     def add_callback(self, func):
         """Add callback function for events."""
         if inspect.isfunction(func):
