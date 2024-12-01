@@ -10,10 +10,10 @@ class NHCCover(NHCAction):
         return self._state > 0
 
     def open(self) :
-        return self._controller.execute(self.action_id, COVER_OPEN)
+        return self._controller.execute(self.id, COVER_OPEN)
 
     def close(self) :
-        return self._controller.execute(self.action_id, COVER_CLOSE)
+        return self._controller.execute(self.id, COVER_CLOSE)
 
     def stop(self) :
-        return self._controller.execute(self.action_id, COVER_STOP)
+        return self._controller.execute(self.id, COVER_STOP)

@@ -14,4 +14,4 @@ class NHCFan(NHCAction):
     return PRESET_MODES['low']
 
   def set_mode(self, speed: str):
-      return self._controller.execute(self.action_id, PRESET_MODES[speed])
+      return self._controller.execute(self.id, PRESET_MODES[speed])

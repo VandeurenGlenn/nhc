@@ -11,11 +11,11 @@ class NHCLight(NHCAction):
 
     def turn_on(self, brightness=255):
         """Turn On."""
-        return self._controller.execute(self.action_id, brightness)
+        return self._controller.execute(self.id, brightness)
 
     def turn_off(self):
         """Turn off."""
-        return self._controller.execute(self.action_id, 0)
+        return self._controller.execute(self.id, 0)
 
     def toggle(self):
         """Toggle on/off."""
