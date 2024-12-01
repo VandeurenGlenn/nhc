@@ -31,7 +31,7 @@ class NHCAction:
         return self._id
 
     @property
-    def action_type(self):
+    def type(self):
         """The Niko Action type."""
         return self._type
 
