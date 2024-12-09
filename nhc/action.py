@@ -35,18 +35,22 @@ class NHCAction:
         """The Niko Action type."""
         return self._type
 
+    @property
     def is_light(self) -> bool:
         """Is a light."""
         return self.type == 1
 
+    @property
     def is_dimmable(self) -> bool:
         """Is a dimmable light."""
         return self.type == 2
 
+    @property
     def is_fan(self) -> bool:
         """Is a fan."""
         return self.type == 3
 
+    @property
     def is_cover(self) -> bool:
         """Is a cover."""
         return self.type == 4
