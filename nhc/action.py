@@ -37,19 +37,19 @@ class NHCAction:
 
     def is_light(self) -> bool:
         """Is a light."""
-        return self.action_type == 1
+        return self.type == 1
 
     def is_dimmable(self) -> bool:
         """Is a dimmable light."""
-        return self.action_type == 2
+        return self.type == 2
 
     def is_fan(self) -> bool:
         """Is a fan."""
-        return self.action_type == 3
+        return self.type == 3
 
     def is_cover(self) -> bool:
         """Is a cover."""
-        return self.action_type == 4
+        return self.type == 4
 
     def update_state(self, state):
         """Update state."""

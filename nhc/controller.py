@@ -70,7 +70,6 @@ class NHCController:
             await self._connection.connect()
 
             actions = self._send('{"cmd": "listactions"}')
-
             locations = self._send('{"cmd": "listlocations"}')
 
             for location in locations:
