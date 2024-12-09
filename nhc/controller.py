@@ -39,7 +39,7 @@ class NHCController:
     def lights(self):
         lights: list[NHCLight] = []
         for action in self._actions:
-            if action.is_light or action.is_dimmable:
+            if action.is_light is True or action.is_dimmable is True:
                 lights.append(action)
         return lights
     
@@ -47,7 +47,7 @@ class NHCController:
     def covers(self):
         covers: list[NHCCover] = []
         for action in self._actions:
-            if action.is_cover:
+            if action.is_cover is True:
                 covers.append(action)
         return covers
     
@@ -55,7 +55,7 @@ class NHCController:
     def fans(self):
         fans: list[NHCFan] = []
         for action in self._actions:
-            if action.is_fan:
+            if action.is_fan is True:
                 fans.append(action)
         return fans
     
