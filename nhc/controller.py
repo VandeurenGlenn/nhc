@@ -60,6 +60,30 @@ class NHCController:
     @property
     def actions(self):
         return self._actions
+    
+    @property
+    def lights(self):
+        lights: list[NHCLight] = []
+        for action in self._actions:
+            if action.is_light or action.is_dimmable:
+                lights.append(action)
+        return lights
+    
+    @property
+    def covers(self):
+        covers: list[NHCCover] = []
+        for action in self._actions:
+            if action.is_cover:
+                covers.append(action)
+        return covers
+    
+    @property
+    def fans(self):
+        fans: list[NHCFan] = []
+        for action in self._actions:
+            if action.is_fan:
+                fans.append(action)
+        return fans
 
     def update(self):
         """Update all actions."""
