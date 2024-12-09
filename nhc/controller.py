@@ -11,35 +11,9 @@ class NHCController:
         self._host = host
         self._callback = []
         self._port = port | 8000
-        self._connection = NHCConnection(host, self.port)
         self._actions: list[NHCLight | NHCCover | NHCFan] = []
         self._locations = {}
-
-        actions = self._send('{"cmd": "listactions"}')
-
-        locations = self._send('{"cmd": "listlocations"}')
-
-        for location in locations:
-            self._locations[location["id"]] = location["name"]
-
-        # self._thermostats = self._send('{"cmd": "listthermostats"}')
-        # self._energy = self._send('{"cmd": "listenergy"}')µ
-
-        self._system_info = self._send('{"cmd": "systeminfo"}')
-
-        for (_action) in actions:
-            entity = None
-            if (_action["type"] == 1 or _action["type"] == 2):
-                entity = NHCLight(self, _action)
-            elif (_action["type"] == 3):
-                entity = NHCFan(self, _action)
-            elif (_action["type"] == 4):
-                entity = NHCCover(self, _action)
-
-            if (entity is not None):
-              self._actions.append(entity)
-
-        self.start_events()
+        self._connection = NHCConnection(host, port)
 
     @property
     def host(self):
@@ -84,6 +58,43 @@ class NHCController:
             if action.is_fan:
                 fans.append(action)
         return fans
+    
+    async def test_connection(self):
+        try:
+            await self._connection.connect()
+        except Exception as e:
+            raise Exception("Connection failed: " + str(e))
+    
+    async def connect(self):
+        try:
+            await self._connection.connect()
+
+            actions = self._send('{"cmd": "listactions"}')
+
+            locations = self._send('{"cmd": "listlocations"}')
+
+            for location in locations:
+                self._locations[location["id"]] = location["name"]
+
+            # self._thermostats = self._send('{"cmd": "listthermostats"}')
+            # self._energy = self._send('{"cmd": "listenergy"}')µ
+
+            self._system_info = self._send('{"cmd": "systeminfo"}')
+
+            for (_action) in actions:
+                entity = None
+                if (_action["type"] == 1 or _action["type"] == 2):
+                    entity = NHCLight(self, _action)
+                elif (_action["type"] == 3):
+                    entity = NHCFan(self, _action)
+                elif (_action["type"] == 4):
+                    entity = NHCCover(self, _action)
+                if (entity is not None):
+                    self._actions.append(entity)
+            self.start_events()
+        except Exception as e:
+            raise Exception("Connection failed: " + str(e))
+
 
     def update(self):
         """Update all actions."""

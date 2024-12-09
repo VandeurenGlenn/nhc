@@ -15,12 +15,21 @@ Author: Dries De Peuter
 import nclib
 from .const import DEFAULT_PORT
 
-NHC_TIMEOUT = 20000
+NHC_TIMEOUT = 2000
 
 class NHCConnection:
     """ A class to communicate with Niko Home Control. """
     def __init__(self, ip, port=DEFAULT_PORT):
-        self._socket = nclib.Netcat((ip, port), udp=False)
+        self._socket = None
+        self._ip = ip
+        self._port = port
+
+    async def connect(self):
+        """
+        Connect to the Niko Home Control.
+        """
+        self._socket = nclib.Netcat((self._ip, self._port), udp=False)
+        self._socket.settimeout(NHC_TIMEOUT)
 
     def __del__(self):
         self._socket.shutdown(1)
