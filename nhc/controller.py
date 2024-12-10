@@ -1,4 +1,3 @@
-from nhc.errors import CannotConnectError
 from .connection import NHCConnection
 from .light import NHCLight
 from .cover import NHCCover
@@ -60,40 +59,31 @@ class NHCController:
                 fans.append(action)
         return fans
     
-    async def test_connection(self):
-        try:
-            await self._connection.connect()
-        except Exception as e:
-            raise CannotConnectError(str(e))
-    
     async def connect(self):
-        try:
-            await self._connection.connect()
+        await self._connection.connect()
 
-            actions = self._send('{"cmd": "listactions"}')
-            locations = self._send('{"cmd": "listlocations"}')
+        actions = self._send('{"cmd": "listactions"}')
+        locations = self._send('{"cmd": "listlocations"}')
 
-            for location in locations:
-                self._locations[location["id"]] = location["name"]
+        for location in locations:
+            self._locations[location["id"]] = location["name"]
 
-            # self._thermostats = self._send('{"cmd": "listthermostats"}')
-            # self._energy = self._send('{"cmd": "listenergy"}')µ
+        # self._thermostats = self._send('{"cmd": "listthermostats"}')
+        # self._energy = self._send('{"cmd": "listenergy"}')µ
 
-            self._system_info = self._send('{"cmd": "systeminfo"}')
+        self._system_info = self._send('{"cmd": "systeminfo"}')
 
-            for (_action) in actions:
-                entity = None
-                if (_action["type"] == 1 or _action["type"] == 2):
-                    entity = NHCLight(self, _action)
-                elif (_action["type"] == 3):
-                    entity = NHCFan(self, _action)
-                elif (_action["type"] == 4):
-                    entity = NHCCover(self, _action)
-                if (entity is not None):
-                    self._actions.append(entity)
-            self.start_events()
-        except Exception as e:
-            raise Exception("Connection failed: " + str(e))
+        for (_action) in actions:
+            entity = None
+            if (_action["type"] == 1 or _action["type"] == 2):
+                entity = NHCLight(self, _action)
+            elif (_action["type"] == 3):
+                entity = NHCFan(self, _action)
+            elif (_action["type"] == 4):
+                entity = NHCCover(self, _action)
+            if (entity is not None):
+                self._actions.append(entity)
+        self.start_events()
 
 
     def update(self):
