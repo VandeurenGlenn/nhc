@@ -1,3 +1,4 @@
+from nhc.errors import CannotConnectError
 from .connection import NHCConnection
 from .light import NHCLight
 from .cover import NHCCover
@@ -63,7 +64,7 @@ class NHCController:
         try:
             await self._connection.connect()
         except Exception as e:
-            raise Exception("Connection failed: " + str(e))
+            raise CannotConnectError(str(e))
     
     async def connect(self):
         try:

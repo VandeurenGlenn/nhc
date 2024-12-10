@@ -32,8 +32,9 @@ class NHCConnection:
         self._socket.settimeout(NHC_TIMEOUT)
 
     def __del__(self):
-        self._socket.shutdown(1)
-        self._socket.close()
+        if self._socket is not None:
+            self._socket.shutdown(1)
+            self._socket.close()
 
     def receive(self):
         """
