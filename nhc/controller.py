@@ -101,7 +101,7 @@ class NHCController:
         if inspect.isfunction(func):
             self._callback.append(func)
         else:
-            raise Exception("Only use functions with 1 parameter as callback.")
+            raise Exception("Only use functions as callback.")
 
 
     def _send(self, data):
@@ -139,7 +139,7 @@ class NHCController:
                         and message["event"] != "startevents":
                     for data in message["data"]:
                         for func in self._callback:
-                            await func(data)
+                            await func(self, data)
         finally:
             self._writer.close()
             await self._writer.wait_closed()
