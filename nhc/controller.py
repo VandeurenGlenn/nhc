@@ -93,9 +93,6 @@ class NHCController:
             error = response['data']['error']
             if error:
                 raise Exception(error['error'])
-
-        if response['data']['error'] == 0:
-            return None
         return response['data']
 
     def execute(self, id: str, value: int) -> None:
