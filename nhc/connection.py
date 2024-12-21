@@ -19,7 +19,7 @@ NHC_TIMEOUT = 2000
 
 class NHCConnection:
     """ A class to communicate with Niko Home Control. """
-    def __init__(self, ip, port=DEFAULT_PORT):
+    def __init__(self, ip: str, port:int=DEFAULT_PORT):
         self._socket = None
         self._ip = ip
         self._port = port

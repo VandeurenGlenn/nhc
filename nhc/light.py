@@ -5,21 +5,21 @@ class NHCLight(NHCAction):
         super().__init__(controller, action)
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool:
         """Is on."""
         return self._state > 0
 
-    def turn_on(self, brightness=255):
+    def turn_on(self, brightness=255) -> None:
         """Turn On."""
-        return self._controller.execute(self.id, brightness)
+        self._controller.execute(self.id, brightness)
 
-    def turn_off(self):
+    def turn_off(self) -> None:
         """Turn off."""
-        return self._controller.execute(self.id, 0)
+        self._controller.execute(self.id, 0)
 
-    def toggle(self):
+    def toggle(self) -> None:
         """Toggle on/off."""
         if self.is_on:
-            return self.turn_off()
-
-        return self.turn_on()
+            self.turn_off()
+        else:
+            self.turn_on()

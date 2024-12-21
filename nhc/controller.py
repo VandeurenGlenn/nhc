@@ -8,36 +8,36 @@ from collections.abc import Awaitable, Callable
 from typing import Any
 
 class NHCController:
-    def __init__(self, host, port=8000):
-        self._host = host
-        self._port = port
+    def __init__(self, host, port=8000) -> None:
+        self._host: str = host
+        self._port: int = port
         self._actions: list[NHCLight | NHCCover | NHCFan] = []
-        self._locations = {}
+        self._locations: dict[str, str] = {}
         self._connection = NHCConnection(host, port)
         self._callbacks: dict[str, list[Callable[[int], Awaitable[None]]]] = {}
 
     @property
-    def host(self):
+    def host(self) -> str:
         return self._host
 
     @property
-    def port(self):
+    def port(self) -> int:
         return self._port
 
     @property
-    def locations(self):
+    def locations(self) -> dict[str, str]:
         return self._locations
 
     @property
-    def system_info(self):
+    def system_info(self) -> dict[str, Any]:
         return self._system_info
 
     @property
-    def actions(self):
+    def actions(self) -> list[NHCLight | NHCCover | NHCFan]:
         return self._actions
     
     @property
-    def lights(self):
+    def lights(self) -> list[NHCLight]:
         lights: list[NHCLight] = []
         for action in self._actions:
             if action.is_light is True or action.is_dimmable is True:
@@ -45,7 +45,7 @@ class NHCController:
         return lights
     
     @property
-    def covers(self):
+    def covers(self) -> list[NHCCover]:
         covers: list[NHCCover] = []
         for action in self._actions:
             if action.is_cover is True:
@@ -53,14 +53,14 @@ class NHCController:
         return covers
     
     @property
-    def fans(self):
+    def fans(self) -> list[NHCFan]:
         fans: list[NHCFan] = []
         for action in self._actions:
             if action.is_fan is True:
                 fans.append(action)
         return fans
     
-    async def connect(self):
+    async def connect(self) -> None:
         await self._connection.connect()
 
         actions = self._send('{"cmd": "listactions"}')
@@ -87,19 +87,21 @@ class NHCController:
         
         self._listen_task = asyncio.create_task(self._listen())
         
-    def _send(self, data):
+    def _send(self, data) -> dict[str, Any] | None:
         response = json.loads(self._connection.send(data))
         if 'error' in response['data']:
             error = response['data']['error']
             if error:
                 raise Exception(error['error'])
 
+        if response['data']['error'] == 0:
+            return None
         return response['data']
 
-    def execute(self, id, value):
-        return self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
+    def execute(self, id: str, value: int) -> None:
+        self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
 
-    def update_state(self, id, value):
+    def update_state(self, id: str, value: int) -> None:
         """Update the state of an action."""
         for action in self._actions:
             if action.id == id:
@@ -128,7 +130,7 @@ class NHCController:
         self.update_state(event["id"], event["value1"])
         await self.async_dispatch_update(event["id"], event["value1"])
 
-    async def _listen(self):
+    async def _listen(self) -> None:
         """
         Listen for events. When an event is received, call callback functions.
         """
