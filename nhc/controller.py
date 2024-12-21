@@ -86,12 +86,6 @@ class NHCController:
                 self._actions.append(entity)
         
         self._listen_task = asyncio.create_task(self._listen())
-
-    def update_state(self, id, value):
-        """Update the state of an action."""
-        for action in self._actions:
-            if action.id == id:
-                action.update_state(value)
         
     def _send(self, data):
         response = json.loads(self._connection.send(data))
@@ -104,6 +98,12 @@ class NHCController:
 
     def execute(self, id, value):
         return self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
+
+    def update_state(self, id, value):
+        """Update the state of an action."""
+        for action in self._actions:
+            if action.id == id:
+                action.update_state(value)
 
     def register_callback(
         self, action_id: str, callback: Callable[[int], Awaitable[None]]
