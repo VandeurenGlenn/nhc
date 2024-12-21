@@ -4,16 +4,17 @@ from .cover import NHCCover
 from .fan import NHCFan
 import json
 import asyncio
-import inspect
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 class NHCController:
-    def __init__(self, host, port):
+    def __init__(self, host, port=8000):
         self._host = host
-        self._callback = []
-        self._port = port | 8000
+        self._port = port
         self._actions: list[NHCLight | NHCCover | NHCFan] = []
         self._locations = {}
         self._connection = NHCConnection(host, port)
+        self._callbacks: dict[str, list[Callable[[int], Awaitable[None]]]] = {}
 
     @property
     def host(self):
@@ -83,27 +84,15 @@ class NHCController:
                 entity = NHCCover(self, _action)
             if (entity is not None):
                 self._actions.append(entity)
-        self.start_events()
+        
+        self._listen_task = asyncio.create_task(self._listen())
 
-
-    def update(self):
-        """Update all actions."""
-        # note this is only needed when not using events.
-        actions = self._send('{"cmd": "listactions"}')
-
-        for action in actions:
-            for _action in self._actions:
-                if _action.id == action["id"]:
-                    _action.update_state(action["value1"])
-
-    def add_callback(self, func):
-        """Add callback function for events."""
-        if inspect.isfunction(func):
-            self._callback.append(func)
-        else:
-            raise Exception("Only use functions as callback.")
-
-
+    def update_state(self, id, value):
+        """Update the state of an action."""
+        for action in self._actions:
+            if action.id == id:
+                action.update_state(value)
+        
     def _send(self, data):
         response = json.loads(self._connection.send(data))
         if 'error' in response['data']:
@@ -116,9 +105,28 @@ class NHCController:
     def execute(self, id, value):
         return self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
 
-    def start_events(self):
-        """Start events."""
-        self._listen_task = asyncio.create_task(self._listen())
+    def register_callback(
+        self, action_id: str, callback: Callable[[int], Awaitable[None]]
+    ) -> Callable[[], None]:
+        """Register a callback for entity updates."""
+        self._callbacks.setdefault(action_id, []).append(callback)
+
+        def remove_callback() -> None:
+            self._callbacks[action_id].remove(callback)
+            if not self._callbacks[action_id]:
+                del self._callbacks[action_id]
+
+        return remove_callback
+
+    async def async_dispatch_update(self, action_id: str, value: int) -> None:
+        """Dispatch an update to all registered callbacks."""
+        for callback in self._callbacks.get(action_id, []):
+            await callback(value)
+
+    async def handle_event(self, event: dict[str, Any]) -> None:
+        """Handle an event."""
+        self.update_state(event["id"], event["value1"])
+        await self.async_dispatch_update(event["id"], event["value1"])
 
     async def _listen(self):
         """
@@ -138,8 +146,7 @@ class NHCController:
                 if "event" in message \
                         and message["event"] != "startevents":
                     for data in message["data"]:
-                        for func in self._callback:
-                            await func(self, data)
+                        await self.handle_event(data)
         finally:
             self._writer.close()
             await self._writer.wait_closed()
