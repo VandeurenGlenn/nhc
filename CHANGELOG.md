@@ -4,3 +4,6 @@
 
 # v0.3.1
 - more typings
+
+# v0.3.3
+- add fan modes 
