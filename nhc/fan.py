@@ -1,9 +1,13 @@
 from .action import NHCAction
-from .const import PRESET_MODES
+from .const import PRESET_MODES, MODES
 
 class NHCFan(NHCAction):
   def __init__(self, controller, action):
     super().__init__(controller, action)
+
+  @property
+  def modes(self) -> list:
+    return MODES
 
   @property
   def mode(self) -> str:
@@ -13,5 +17,5 @@ class NHCFan(NHCAction):
 
     return PRESET_MODES['low']
 
-  def set_mode(self, speed: str) -> None:
-      self._controller.execute(self.id, PRESET_MODES[speed])
+  def set_mode(self, preset_mode: str) -> None:
+      self._controller.execute(self.id, PRESET_MODES[preset_mode])
