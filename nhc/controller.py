@@ -15,6 +15,8 @@ class NHCController:
         self._locations: dict[str, str] = {}
         self._connection = NHCConnection(host, port)
         self._callbacks: dict[str, list[Callable[[int], Awaitable[None]]]] = {}
+        self.jobs = []
+        self.jobRunning = False
 
     @property
     def host(self) -> str:
@@ -60,6 +62,15 @@ class NHCController:
                 fans.append(action)
         return fans
     
+    def jobHandler(self):
+        '''Handle the job queue'''
+        if len(self.jobs) > 0 and not self.jobRunning:
+            self.jobRunning = True
+            job = self.jobs.pop(0)
+            job()
+            self.jobRunning = False
+            self.jobHandler()
+
     async def connect(self) -> None:
         await self._connection.connect()
 
@@ -92,11 +103,24 @@ class NHCController:
         if 'error' in response['data']:
             error = response['data']['error']
             if error:
-                raise Exception(error['error'])
+                if error == 100:
+                    raise Exception("NOT_FOUND")
+                if error == 200:
+                    return Exception("TO_MANY_REQUESTS")
+                if error == 300:
+                    raise Exception("ERROR")
+                raise("Unknown error code: %s" % error)
         return response['data']
 
     def execute(self, id: str, value: int) -> None:
-        self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
+        """Add an action to jobs to make sure only one command happens at a time."""
+        def job():
+            self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
+        
+        self.jobs.append(job)
+
+        if not self.jobRunning:
+            self.jobHandler()
 
     def update_state(self, id: str, value: int) -> None:
         """Update the state of an action."""
@@ -125,6 +149,7 @@ class NHCController:
     async def handle_event(self, event: dict[str, Any]) -> None:
         """Handle an event."""
         self.update_state(event["id"], event["value1"])
+      
         await self.async_dispatch_update(event["id"], event["value1"])
 
     async def _listen(self) -> None:
