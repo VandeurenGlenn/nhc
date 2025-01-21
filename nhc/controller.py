@@ -6,6 +6,9 @@ import json
 import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Any
+import logging
+
+_LOGGER = logging.getLogger('niko_home_control')
 
 class NHCController:
     def __init__(self, host, port=8000) -> None:
@@ -106,7 +109,7 @@ class NHCController:
                 if error == 100:
                     raise Exception("NOT_FOUND")
                 if error == 200:
-                    return Exception("TO_MANY_REQUESTS")
+                    raise Exception("TO_MANY_REQUESTS")
                 if error == 300:
                     raise Exception("ERROR")
                 raise("Unknown error code: %s" % error)
@@ -114,6 +117,9 @@ class NHCController:
 
     def execute(self, id: str, value: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
+        _LOGGER.debug(f"execute: {id} {value}")
+        _LOGGER.debug(f"jobs: {self.jobs}")
+        _LOGGER.debug(f"jobRunning: {self.jobRunning}")
         def job():
             self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
         
@@ -167,6 +173,7 @@ class NHCController:
 
             async for line in self._reader:
                 message = json.loads(line.decode())
+                _LOGGER.debug(f"message: {message}")
                 if "event" in message \
                         and message["event"] != "startevents":
                     for data in message["data"]:

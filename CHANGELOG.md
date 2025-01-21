@@ -14,3 +14,8 @@
 # v0.3.4
 
 - Add jobhandler to ensure only one command happens at a time [fixes](https://github.com/home-assistant/core/issues/134840)
+
+# v0.3.5
+
+- debug
+- fix is return while it should raise
