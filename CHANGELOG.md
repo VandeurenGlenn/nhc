@@ -19,3 +19,7 @@
 
 - debug
 - fix is return while it should raise
+
+# v0.3.6
+
+- ignore energy & thermostat events
