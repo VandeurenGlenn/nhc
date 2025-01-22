@@ -1,3 +1,4 @@
+from .errors import UnknownError, ToManyRequestsError
 from .connection import NHCConnection
 from .light import NHCLight
 from .cover import NHCCover
@@ -111,10 +112,10 @@ class NHCController:
                 if error == 100:
                     raise Exception("NOT_FOUND")
                 if error == 200:
-                    raise Exception("TO_MANY_REQUESTS")
+                    raise ToManyRequestsError(error)
                 if error == 300:
                     raise Exception("ERROR")
-                raise("Unknown error code: %s" % error)
+                raise UnknownError(error)
         return response['data']
 
     def execute(self, id: str, value: int) -> None:
