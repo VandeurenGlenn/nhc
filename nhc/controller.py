@@ -16,6 +16,9 @@ class NHCController:
         self._port: int = port
         self._actions: list[NHCLight | NHCCover | NHCFan] = []
         self._locations: dict[str, str] = {}
+        self._energy: dict[str, Any] = {}
+        self._thermostats: dict[str, Any] = {}
+        self._system_info: dict[str, Any] = {}
         self._connection = NHCConnection(host, port)
         self._callbacks: dict[str, list[Callable[[int], Awaitable[None]]]] = {}
         self.jobs = []
@@ -83,9 +86,8 @@ class NHCController:
         for location in locations:
             self._locations[location["id"]] = location["name"]
 
-        # self._thermostats = self._send('{"cmd": "listthermostats"}')
-        # self._energy = self._send('{"cmd": "listenergy"}')µ
-
+        self._thermostats = self._send('{"cmd": "listthermostats"}')
+        self._energy = self._send('{"cmd": "listenergy"}')
         self._system_info = self._send('{"cmd": "systeminfo"}')
 
         for (_action) in actions:
@@ -158,6 +160,23 @@ class NHCController:
       
         await self.async_dispatch_update(event["id"], event["value1"])
 
+    async def handle_energy_event(self, event: dict[str, Any]) -> None:
+        """Handle an energy event."""
+        _LOGGER.debug(f"energy: {self._energy}")
+        _LOGGER.debug(f"handle_energy_event: {event}")
+        # in watts?
+        # self.update_state(event["channel"], event["v"])
+    
+        # await self.async_dispatch_update(event["channel"], event["v"])
+    async def handle_thermostat_event(self, event: dict[str, Any]) -> None:
+        """Handle an energy event."""
+        _LOGGER.debug(f"thermostat: {self._thermostats}")
+        _LOGGER.debug(f"handle_thermostat_event: {event}")
+        # in watts?
+        # self.update_state(event["channel"], event["v"])
+
+        # await self.async_dispatch_update(event["channel"], event["v"])
+
     async def _listen(self) -> None:
         """
         Listen for events. When an event is received, call callback functions.
@@ -174,10 +193,16 @@ class NHCController:
             async for line in self._reader:
                 message = json.loads(line.decode())
                 _LOGGER.debug(f"message: {message}")
-                if "event" in message \
-                        and message["event"] != "startevents":
-                    for data in message["data"]:
-                        await self.handle_event(data)
+                if "event" in message and message["event"] != "startevents":
+                    # The controller also sends energy and thermostat events, so we make sure we handle those separately
+                    if message["event"] == "getlive":
+                        await self.handle_energy_event(message["data"])
+                    if message["event"] == "listthermostat":
+                        for data in message["data"]:
+                            await self.handle_thermostat_event(message["data"])
+                    else:
+                        for data in message["data"]:
+                            await self.handle_event(data)
         finally:
             self._writer.close()
             await self._writer.wait_closed()
