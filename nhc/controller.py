@@ -124,11 +124,13 @@ class NHCController:
         _LOGGER.debug(f"jobs: {self.jobs}")
         _LOGGER.debug(f"jobRunning: {self.jobRunning}")
         def job():
+            _LOGGER.debug(f"job: {id} {value}")
             self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
         
         self.jobs.append(job)
 
         if not self.jobRunning:
+            _LOGGER.debug(f"jobRunning: {self.jobRunning}")
             self.jobHandler()
 
     def update_state(self, id: str, value: int) -> None:
