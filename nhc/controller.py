@@ -86,7 +86,7 @@ class NHCController:
         for location in locations:
             self._locations[location["id"]] = location["name"]
 
-        self._thermostats = self._send('{"cmd": "listthermostats"}')
+        self._thermostats = self._send('{"cmd": "listthermostat"}')
         self._energy = self._send('{"cmd": "listenergy"}')
         self._system_info = self._send('{"cmd": "systeminfo"}')
 
