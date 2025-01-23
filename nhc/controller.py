@@ -200,7 +200,7 @@ class NHCController:
                     # The controller also sends energy and thermostat events, so we make sure we handle those separately
                     if message["event"] == "getlive":
                         await self.handle_energy_event(message["data"])
-                    if message["event"] == "listthermostat":
+                    elif message["event"] == "listthermostat":
                         for data in message["data"]:
                             await self.handle_thermostat_event(message["data"])
                     else:
