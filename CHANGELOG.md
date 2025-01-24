@@ -23,3 +23,7 @@
 # v0.3.6
 
 - ignore energy & thermostat events
+
+# v0.3.9
+
+- fix event not running
