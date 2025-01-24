@@ -12,6 +12,7 @@ License: MIT https://opensource.org/licenses/MIT
 Source: https://github.com/NoUseFreak/niko-home-control
 Author: Dries De Peuter
 """
+import asyncio
 import nclib
 from .const import DEFAULT_PORT
 
@@ -19,7 +20,7 @@ NHC_TIMEOUT = 2000
 
 class NHCConnection:
     """ A class to communicate with Niko Home Control. """
-    def __init__(self, ip: str, port:int=DEFAULT_PORT):
+    def __init__(self, ip: str, port: int = DEFAULT_PORT):
         self._socket = None
         self._ip = ip
         self._port = port
@@ -28,37 +29,58 @@ class NHCConnection:
         """
         Connect to the Niko Home Control.
         """
-        self._socket = nclib.Netcat((self._ip, self._port), udp=False)
-        self._socket.settimeout(NHC_TIMEOUT)
+        try:
+            loop = asyncio.get_event_loop()
+            self._socket = await loop.run_in_executor(None, nclib.Netcat, (self._ip, self._port), False)
+            self._socket.settimeout(NHC_TIMEOUT)
+        except Exception as e:
+            self._socket = None
+            raise ConnectionError(f"Failed to connect: {e}")
 
-    def __del__(self):
+    async def disconnect(self):
+        """
+        Disconnect from the Niko Home Control.
+        """
         if self._socket is not None:
-            self._socket.shutdown(1)
-            self._socket.close()
+            try:
+                await asyncio.get_event_loop().run_in_executor(None, self._socket.shutdown, 1)
+            except Exception as e:
+                print(f"Failed to disconnect: {e}")
+            finally:
+                self._socket = None
 
-    def receive(self):
+    async def receive(self):
         """
         Receives information from the Netcat socket.
         """
-        return self._socket.recv().decode()
+        try:
+            return await asyncio.get_event_loop().run_in_executor(None, self._socket.recv).decode()
+        except Exception as e:
+            print(f"Failed to receive data: {e}")
+            return None
 
-    def read(self):
-        return self._receive_until(b'\r')
+    async def read(self):
+        return await self._receive_until(b'\r')
 
-    def _receive_until(self, s):
+    async def _receive_until(self, s):
         """
-        Recieve data from the socket until the given substring is observed.
+        Receive data from the socket until the given substring is observed.
         Data in the same datagram as the substring, following the substring,
         will not be returned and will be cached for future receives.
         """
-        return self._socket.recv_until(s)
+        try:
+            data = b""
+            while True:
+                chunk = await asyncio.get_event_loop().run_in_executor(None, self._socket.recv)
+                if s in chunk:
+                    data += chunk[:chunk.find(s)]
+                    break
+                data += chunk
+            return data.decode()
+        except Exception as e:
+            print(f"Failed to receive until {s}: {e}")
+            return None
 
-    def send(self, s):
-        """
-        Sends the given command to Niko Home Control and returns the output of
-        the system.
-
-        Aliases: write, put, sendall, send_all
-        """
-        self._socket.send(s.encode())
-        return self.read()
+    def __del__(self):
+        if self._socket is not None:
+            asyncio.get_event_loop().run_until_complete(self.disconnect())

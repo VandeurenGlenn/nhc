@@ -4,3 +4,6 @@ class UnknownError(Exception):
 
 class ToManyRequestsError(Exception):
     pass
+
+class ConnectionError(Exception):
+    pass
