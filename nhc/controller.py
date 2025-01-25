@@ -3,6 +3,8 @@ from .connection import NHCConnection
 from .light import NHCLight
 from .cover import NHCCover
 from .fan import NHCFan
+from .energy import NHCEnergy
+from .thermostat import NHCThermostat
 import json
 import asyncio
 from collections.abc import Awaitable, Callable
@@ -17,8 +19,8 @@ class NHCController:
         self._port: int = port
         self._actions: list[NHCLight | NHCCover | NHCFan] = []
         self._locations: dict[str, str] = {}
-        self._energy: dict[str, Any] = {}
-        self._thermostats: dict[str, Any] = {}
+        self._energy: dict[str, NHCEnergy] = {}
+        self._thermostats: dict[str, NHCThermostat] = {}
         self._system_info: dict[str, Any] = {}
         self._connection = NHCConnection(host, port)
         self._callbacks: dict[str, list[Callable[[int], Awaitable[None]]]] = {}
@@ -69,6 +71,14 @@ class NHCController:
                 fans.append(action)
         return fans
     
+    @property
+    def thermostats(self) -> dict[str, Any]:
+        return self._thermostats
+    
+    @property
+    def energy(self) -> dict[str, Any]:
+        return self._energy
+    
     def jobHandler(self):
         '''Handle the job queue'''
         if len(self.jobs) > 0 and not self.jobRunning:
@@ -87,8 +97,12 @@ class NHCController:
         for location in locations:
             self._locations[location["id"]] = location["name"]
 
-        self._thermostats = self._send('{"cmd": "listthermostat"}')
-        self._energy = self._send('{"cmd": "listenergy"}')
+        for (thermostat) in self._send('{"cmd": "listthermostat"}'):
+            self._thermostats[thermostat["id"]] = NHCThermostat(self, thermostat)
+
+        for energy in self._send('{"cmd": "listenergy"}'):
+            self._energy[energy["channel"]] = NHCEnergy(self, energy)
+
         self._system_info = self._send('{"cmd": "systeminfo"}')
 
         for (_action) in actions:
@@ -120,17 +134,22 @@ class NHCController:
 
     def execute(self, id: str, value: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
-        _LOGGER.debug(f"execute: {id} {value}")
-        _LOGGER.debug(f"jobs: {self.jobs}")
-        _LOGGER.debug(f"jobRunning: {self.jobRunning}")
         def job():
-            _LOGGER.debug(f"job: {id} {value}")
             self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
         
         self.jobs.append(job)
 
         if not self.jobRunning:
-            _LOGGER.debug(f"jobRunning: {self.jobRunning}")
+            self.jobHandler()
+
+    def execute_thermostat(self, id: int, mode: int, overruletime: str, overrule: int, setpoint: int) -> None:
+        """Add an action to jobs to make sure only one command happens at a time."""
+        def job():
+            self._send('{"cmd": "%s", "id": %s, "mode": "%s", "overruletime": "%s", "overrule": %s, setpoint: %s}' % ("executethermostat", id, mode, str(overruletime), overrule, setpoint))
+        
+        self.jobs.append(job)
+
+        if not self.jobRunning:
             self.jobHandler()
 
     def update_state(self, id: str, value: int) -> None:
