@@ -4,7 +4,7 @@ class NHCThermostat(NHCBaseAction):
     def __init__(self, controller, data):
         super().__init__(controller, data)
         self._measured = data["measured"]
-        self._wanted = data["setpoint"]
+        self._setpoint = data["setpoint"]
         self._overrule = data["overrule"]
         self._overruletime = data["overruletime"]
         self._ecosave = data["ecosave"]
@@ -14,8 +14,8 @@ class NHCThermostat(NHCBaseAction):
         return self._measured
 
     @property
-    def wanted(self):
-        return self._wanted
+    def setpoint(self):
+        return self._setpoint
     
     @property
     def mode(self):
@@ -36,12 +36,12 @@ class NHCThermostat(NHCBaseAction):
     def set_mode(self, mode):
         self._controller.execute_thermostat(self.id, mode, self._overruletime, self._overrule, self._wanted)
 
-    def set_temperature(self, wanted):
-        self._controller.execute_thermostat(self.id, self._state, self._overruletime, self._overrule, wanted)
+    def set_temperature(self, setpoint):
+        self._controller.execute_thermostat(self.id, self._state, self._overruletime, self._overrule, setpoint)
     
     def update_state(self, data):
         self._state = data["mode"]
-        self._wanted = data["setpoint"]
+        self._setpoint = data["setpoint"]
         self._measured = data["measured"]
         self._overrule = data["overrule"]
         self._overruletime = data["overruletime"]
