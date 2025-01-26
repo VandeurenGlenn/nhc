@@ -99,11 +99,11 @@ class NHCController:
 
         for thermostat in self._send('{"cmd": "listthermostat"}'):
             entity =  NHCThermostat(self, thermostat)
-            self._thermostats[entity["id"]] = entity
+            self._thermostats[entity.id] = entity
 
         for energy in self._send('{"cmd": "listenergy"}'):
             entity = NHCEnergy(self, energy)
-            self._energy[entity["id"]] = entity
+            self._energy[entity.id] = entity
 
         self._system_info = self._send('{"cmd": "systeminfo"}')
 
