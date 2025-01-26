@@ -11,7 +11,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any
 import logging
 
-_LOGGER = logging.getLogger('niko_home_control')
+_LOGGER = logging.getLogger('nikohomecontrol')
 
 class NHCController:
     def __init__(self, host, port=8000) -> None:
@@ -97,10 +97,14 @@ class NHCController:
         for location in locations:
             self._locations[location["id"]] = location["name"]
 
+        _LOGGER.debug(f"actions: {actions}")
+        _LOGGER.debug(f"locations: {locations}")
+        _LOGGER.debug(f"thermostats: {self._send('{"cmd": "listthermostat"}')}")
         for thermostat in self._send('{"cmd": "listthermostat"}'):
             entity =  NHCThermostat(self, thermostat)
             self._thermostats[entity.id] = entity
 
+        _LOGGER.debug(f"energy: {self._send('{"cmd": "listthermostat"}')}")
         for energy in self._send('{"cmd": "listenergy"}'):
             entity = NHCEnergy(self, energy)
             self._energy[entity.id] = entity
@@ -118,6 +122,7 @@ class NHCController:
             if (entity is not None):
                 self._actions.append(entity)
         
+        _LOGGER.debug(f"actions: ok")
         self._listen_task = asyncio.create_task(self._listen())
         
     def _send(self, data) -> dict[str, Any] | None:
@@ -224,7 +229,7 @@ class NHCController:
                 _LOGGER.debug(f"message: {message}")
                 if "event" in message and message["event"] != "startevents":
                     # The controller also sends energy and thermostat events, so we make sure we handle those separately
-                    
+                    _LOGGER.debug(f"message: {message}")
                     for data in message["data"]:
                         if message["event"] == "getlive":
                             await self.handle_energy_event(data)
