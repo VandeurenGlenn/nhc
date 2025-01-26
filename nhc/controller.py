@@ -97,11 +97,13 @@ class NHCController:
         for location in locations:
             self._locations[location["id"]] = location["name"]
 
-        for (thermostat) in self._send('{"cmd": "listthermostat"}'):
-            self._thermostats[thermostat["id"]] = NHCThermostat(self, thermostat)
+        for thermostat in self._send('{"cmd": "listthermostat"}'):
+            entity =  NHCThermostat(self, thermostat)
+            self._thermostats[entity["id"]] = entity
 
         for energy in self._send('{"cmd": "listenergy"}'):
-            self._energy[energy["channel"]] = NHCEnergy(self, energy)
+            entity = NHCEnergy(self, energy)
+            self._energy[entity["id"]] = entity
 
         self._system_info = self._send('{"cmd": "systeminfo"}')
 
@@ -154,9 +156,14 @@ class NHCController:
 
     def update_state(self, id: str, value: int) -> None:
         """Update the state of an action."""
-        for action in self._actions:
-            if action.id == id:
-                action.update_state(value)
+        if (id.startsWith("energy-")):
+            self._energy[id].update_state(value)
+        elif (id.startsWith("thermostat-")):
+            self._thermostats[id].update_state(value)
+        else:
+            for action in self._actions:
+                if action.id == id:
+                    action.update_state(value)
 
     def register_callback(
         self, action_id: str, callback: Callable[[int], Awaitable[None]]
@@ -217,13 +224,13 @@ class NHCController:
                 _LOGGER.debug(f"message: {message}")
                 if "event" in message and message["event"] != "startevents":
                     # The controller also sends energy and thermostat events, so we make sure we handle those separately
-                    if message["event"] == "getlive":
-                        await self.handle_energy_event(message["data"])
-                    elif message["event"] == "listthermostat":
-                        for data in message["data"]:
-                            await self.handle_thermostat_event(message["data"])
-                    else:
-                        for data in message["data"]:
+                    
+                    for data in message["data"]:
+                        if message["event"] == "getlive":
+                            await self.handle_energy_event(data)
+                        elif message["event"] == "listthermostat":
+                            await self.handle_thermostat_event(data)
+                        else:
                             await self.handle_event(data)
         finally:
             self._writer.close()
