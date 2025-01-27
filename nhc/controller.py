@@ -198,18 +198,17 @@ class NHCController:
         """Handle an energy event."""
         _LOGGER.debug(f"energy: {self._energy}")
         _LOGGER.debug(f"handle_energy_event: {event}")
-        # in watts?
-        # self.update_state(event["channel"], event["v"])
-    
-        # await self.async_dispatch_update(event["channel"], event["v"])
+        id = f"energy-{event['channel']}"
+        self.update_state(id, event["v"])
+        await self.async_dispatch_update(id, event["v"])
+
     async def handle_thermostat_event(self, event: dict[str, Any]) -> None:
         """Handle an energy event."""
         _LOGGER.debug(f"thermostat: {self._thermostats}")
         _LOGGER.debug(f"handle_thermostat_event: {event}")
-        # in watts?
-        # self.update_state(event["channel"], event["v"])
-
-        # await self.async_dispatch_update(event["channel"], event["v"])
+        id = f"thermostat-{event['id']}"
+        self.update_state(id, event)
+        await self.async_dispatch_update(id, event)
 
     async def _listen(self) -> None:
         """
