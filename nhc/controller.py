@@ -231,12 +231,11 @@ class NHCController:
                     _LOGGER.debug(f"message: {message}")
                     if message["event"] == "getlive":
                         await self.handle_energy_event(message["data"])
+                    elif message["event"] == "thermostat":
+                        await self.handle_thermostat_event(message["data"])
                     else:
                         for data in message["data"]:
-                            if message["event"] == "listthermostat":
-                                await self.handle_thermostat_event(data)
-                            else:
-                                await self.handle_event(data)
+                            await self.handle_event(data)
         finally:
             self._writer.close()
             await self._writer.wait_closed()
