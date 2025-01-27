@@ -4,6 +4,7 @@ class NHCBaseAction:
     _name: str
     _id: int
     _suggested_area: str | None = None
+    _state: str | int = None
 
     def __init__(self, controller, action):
         """Init Niko Base Action."""
