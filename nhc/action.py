@@ -3,12 +3,13 @@ class NHCBaseAction:
     """A Niko Base Action."""
     _name: str
     _id: int
-    _suggested_area: str
+    _suggested_area: str | None = None
 
     def __init__(self, controller, action):
         """Init Niko Base Action."""
         self._name = action["name"]
         self._controller = controller
+        
 
         if ("channel" in action) and (action["channel"] is not None):
             self._id = f"energy-{action["channel"]}"
