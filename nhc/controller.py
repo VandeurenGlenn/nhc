@@ -160,13 +160,15 @@ class NHCController:
 
     def update_state(self, id: str, value: int) -> None:
         """Update the state of an action."""
-        if (id.startswith("energy-")):
+        _LOGGER.debug(f"update_state: {id} {value}")
+        if (id.startswith("energy-") is True):
             self._energy[id].update_state(value)
-        elif (id.startswith("thermostat-")):
+        elif (id.startswith("thermostat-") is True):
             self._thermostats[id].update_state(value)
         else:
             for action in self._actions:
                 if action.id == id:
+                    _LOGGER.debug(f"update_state for: {action}")
                     action.update_state(value)
 
     def register_callback(
