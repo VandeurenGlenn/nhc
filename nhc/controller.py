@@ -9,6 +9,7 @@ import json
 import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Any
+from .events import NHCActionEvent, NHCEnergyEvent, NHCThermostatEvent
 import logging
 
 _LOGGER = logging.getLogger('nikohomecontrol')
@@ -176,7 +177,7 @@ class NHCController:
         for callback in self._callbacks.get(action_id, []):
             await callback(value)
 
-    async def handle_event(self, event: dict[str, Any]) -> None:
+    async def handle_event(self, event: NHCActionEvent) -> None:
         """Handle an event."""
         for action in self._actions:
             if action.id == event["id"]:
@@ -185,7 +186,7 @@ class NHCController:
       
         await self.async_dispatch_update(event["id"], event["value1"])
 
-    async def handle_energy_event(self, event: dict[str, Any]) -> None:
+    async def handle_energy_event(self, event: NHCEnergyEvent) -> None:
         """Handle an energy event."""
         _LOGGER.debug(f"energy: {self._energy}")
         _LOGGER.debug(f"handle_energy_event: {event}")
@@ -193,7 +194,7 @@ class NHCController:
         self._energy[id].update_state(event["v"])
         await self.async_dispatch_update(id, event["v"])
 
-    async def handle_thermostat_event(self, event: dict[str, Any]) -> None:
+    async def handle_thermostat_event(self, event: NHCThermostatEvent) -> None:
         """Handle an energy event."""
         _LOGGER.debug(f"thermostat: {self._thermostats}")
         _LOGGER.debug(f"handle_thermostat_event: {event}")
@@ -223,11 +224,11 @@ class NHCController:
                     # The controller also sends energy and thermostat events, so we make sure we handle those separately
                     if message["event"] == "getlive":
                         _LOGGER.debug(f"getlive: {message}")
-                        # await self.handle_energy_event(message["data"])
+                        await self.handle_energy_event(message["data"])
                     elif message["event"] == "listthermostat":
                         _LOGGER.debug(f"listthermostat: {message}")
-                        # for data in message["data"]:
-                        #     await self.handle_thermostat_event(message["data"])
+                        for data in message["data"]:
+                            await self.handle_thermostat_event(message["data"])
                     else:
                         for data in message["data"]:
                             await self.handle_event(data)
