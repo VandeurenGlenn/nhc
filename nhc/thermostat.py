@@ -34,7 +34,7 @@ class NHCThermostat(NHCBaseAction):
         return self._ecosave
     
     def set_mode(self, mode):
-        self._controller.execute_thermostat(self.id, mode, self._overruletime, self._overrule, self._wanted)
+        self._controller.execute_thermostat(self.id, mode, self._overruletime, self._overrule, self._setpoint)
 
     def set_temperature(self, setpoint):
         self._controller.execute_thermostat(self.id, self._state, self._overruletime, self._overrule, setpoint)

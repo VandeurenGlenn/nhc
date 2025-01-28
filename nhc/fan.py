@@ -2,8 +2,6 @@ from .action import NHCAction
 from .const import PRESET_MODES, MODES
 
 class NHCFan(NHCAction):
-  def __init__(self, controller, action):
-    super().__init__(controller, action)
 
   @property
   def modes(self) -> list:

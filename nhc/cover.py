@@ -2,8 +2,6 @@ from .action import NHCAction
 from .const import COVER_OPEN, COVER_CLOSE, COVER_STOP
 
 class NHCCover(NHCAction):
-    def __init__(self, controller, action):
-        super().__init__(controller, action)
 
     @property
     def is_open(self) -> bool:

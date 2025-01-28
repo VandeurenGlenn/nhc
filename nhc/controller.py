@@ -83,9 +83,11 @@ class NHCController:
         '''Handle the job queue'''
         if len(self.jobs) > 0 and not self.jobRunning:
             self.jobRunning = True
+            _LOGGER.debug(f"jobRunning: {self.jobRunning}")
             job = self.jobs.pop(0)
             job()
             self.jobRunning = False
+            _LOGGER.debug(f"jobRunning: {self.jobRunning}")
             self.jobHandler()
 
     async def connect(self) -> None:
@@ -97,14 +99,10 @@ class NHCController:
         for location in locations:
             self._locations[location["id"]] = location["name"]
 
-        _LOGGER.debug(f"actions: {actions}")
-        _LOGGER.debug(f"locations: {locations}")
-        _LOGGER.debug(f"thermostats: {self._send('{"cmd": "listthermostat"}')}")
         for thermostat in self._send('{"cmd": "listthermostat"}'):
             entity =  NHCThermostat(self, thermostat)
             self._thermostats[entity.id] = entity
 
-        _LOGGER.debug(f"energy: {self._send('{"cmd": "listthermostat"}')}")
         for energy in self._send('{"cmd": "listenergy"}'):
             entity = NHCEnergy(self, energy)
             self._energy[entity.id] = entity
@@ -121,8 +119,7 @@ class NHCController:
                 entity = NHCCover(self, _action)
             if (entity is not None):
                 self._actions.append(entity)
-        
-        _LOGGER.debug(f"actions: ok")
+
         self._listen_task = asyncio.create_task(self._listen())
         
     def _send(self, data) -> dict[str, Any] | None:
@@ -141,11 +138,13 @@ class NHCController:
 
     def execute(self, id: str, value: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
+        _LOGGER.debug(f"execute: {id} {value}")
         def job():
             self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
         
         self.jobs.append(job)
-
+        _LOGGER.debug(f"jobs: {self.jobs}")
+        _LOGGER.debug(f"jobRunning: {self.jobRunning}")
         if not self.jobRunning:
             self.jobHandler()
 

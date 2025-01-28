@@ -1,8 +1,6 @@
 from .action import NHCAction
 
 class NHCLight(NHCAction):
-    def __init__(self, controller, action):
-        super().__init__(controller, action)
 
     @property
     def is_on(self) -> bool:
