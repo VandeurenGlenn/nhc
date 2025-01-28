@@ -230,10 +230,12 @@ class NHCController:
                     _LOGGER.debug(f"message: {message}")
                     # The controller also sends energy and thermostat events, so we make sure we handle those separately
                     if message["event"] == "getlive":
-                        await self.handle_energy_event(message["data"])
+                        _LOGGER.debug(f"getlive: {message}")
+                        # await self.handle_energy_event(message["data"])
                     elif message["event"] == "listthermostat":
-                        for data in message["data"]:
-                            await self.handle_thermostat_event(message["data"])
+                        _LOGGER.debug(f"listthermostat: {message}")
+                        # for data in message["data"]:
+                        #     await self.handle_thermostat_event(message["data"])
                     else:
                         for data in message["data"]:
                             await self.handle_event(data)
