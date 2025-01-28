@@ -160,9 +160,9 @@ class NHCController:
 
     def update_state(self, id: str, value: int) -> None:
         """Update the state of an action."""
-        if (id.startsWith("energy-")):
+        if (id.startswith("energy-")):
             self._energy[id].update_state(value)
-        elif (id.startsWith("thermostat-")):
+        elif (id.startswith("thermostat-")):
             self._thermostats[id].update_state(value)
         else:
             for action in self._actions:
