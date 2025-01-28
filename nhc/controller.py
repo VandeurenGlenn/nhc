@@ -158,19 +158,6 @@ class NHCController:
         if not self.jobRunning:
             self.jobHandler()
 
-    def update_state(self, id: str, value: int) -> None:
-        """Update the state of an action."""
-        _LOGGER.debug(f"update_state: {id} {value}")
-        if (id.startswith("energy-") is True):
-            self._energy[id].update_state(value)
-        elif (id.startswith("thermostat-") is True):
-            self._thermostats[id].update_state(value)
-        else:
-            for action in self._actions:
-                if action.id == id:
-                    _LOGGER.debug(f"update_state for: {action}")
-                    action.update_state(value)
-
     def register_callback(
         self, action_id: str, callback: Callable[[int], Awaitable[None]]
     ) -> Callable[[], None]:
@@ -191,7 +178,10 @@ class NHCController:
 
     async def handle_event(self, event: dict[str, Any]) -> None:
         """Handle an event."""
-        self.update_state(event["id"], event["value1"])
+        for action in self._actions:
+            if action.id == event["id"]:
+                _LOGGER.debug(f"update_state for: {action}")
+                action.update_state(event["value1"])
       
         await self.async_dispatch_update(event["id"], event["value1"])
 
@@ -200,7 +190,7 @@ class NHCController:
         _LOGGER.debug(f"energy: {self._energy}")
         _LOGGER.debug(f"handle_energy_event: {event}")
         id = f"energy-{event['channel']}"
-        self.update_state(id, event["v"])
+        self._energy[id].update_state(event["v"])
         await self.async_dispatch_update(id, event["v"])
 
     async def handle_thermostat_event(self, event: dict[str, Any]) -> None:
@@ -208,7 +198,7 @@ class NHCController:
         _LOGGER.debug(f"thermostat: {self._thermostats}")
         _LOGGER.debug(f"handle_thermostat_event: {event}")
         id = f"thermostat-{event['id']}"
-        self.update_state(id, event)
+        self._thermostats[id].update_state(event)
         await self.async_dispatch_update(id, event)
 
     async def _listen(self) -> None:
