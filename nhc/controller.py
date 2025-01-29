@@ -139,13 +139,10 @@ class NHCController:
 
     def execute(self, id: str, value: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
-        _LOGGER.debug(f"execute: {id} {value}")
         def job():
             self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
         
         self.jobs.append(job)
-        _LOGGER.debug(f"jobs: {self.jobs}")
-        _LOGGER.debug(f"jobRunning: {self.jobRunning}")
         if not self.jobRunning:
             self.jobHandler()
 
@@ -181,22 +178,18 @@ class NHCController:
         """Handle an event."""
         for action in self._actions:
             if action.id == event["id"]:
-                _LOGGER.debug(f"update_state for: {action}")
                 action.update_state(event["value1"])
       
         await self.async_dispatch_update(event["id"], event["value1"])
 
     async def handle_energy_event(self, event: NHCEnergyEvent) -> None:
         """Handle an energy event."""
-        _LOGGER.debug(f"energy: {self._energy}")
-        _LOGGER.debug(f"handle_energy_event: {event}")
         id = f"energy-{event['channel']}"
         self._energy[id].update_state(event["v"])
         await self.async_dispatch_update(id, event["v"])
 
     async def handle_thermostat_event(self, event: NHCThermostatEvent) -> None:
         """Handle an energy event."""
-        _LOGGER.debug(f"thermostat: {self._thermostats}")
         _LOGGER.debug(f"handle_thermostat_event: {event}")
         id = f"thermostat-{event['id']}"
         self._thermostats[id].update_state(event)
@@ -217,16 +210,11 @@ class NHCController:
 
             async for line in self._reader:
                 message = json.loads(line.decode())
-                _LOGGER.debug(f"message: {message}")
                 if "event" in message and message["event"] != "startevents":
                     # The controller also sends energy and thermostat events, so we make sure we handle those separately
-                    _LOGGER.debug(f"message: {message}")
-                    # The controller also sends energy and thermostat events, so we make sure we handle those separately
                     if message["event"] == "getlive":
-                        _LOGGER.debug(f"getlive: {message}")
                         await self.handle_energy_event(message["data"])
                     elif message["event"] == "listthermostat":
-                        _LOGGER.debug(f"listthermostat: {message}")
                         for data in message["data"]:
                             await self.handle_thermostat_event(data)
                     else:

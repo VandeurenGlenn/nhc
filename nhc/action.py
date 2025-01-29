@@ -12,7 +12,6 @@ class NHCBaseAction:
         self._name = action["name"]
         self._controller = controller
         
-
         if ("channel" in action) and (action["channel"] is not None):
             self._id = f"energy-{action["channel"]}"
         elif ("mode" in action) and (action["mode"] is not None):
