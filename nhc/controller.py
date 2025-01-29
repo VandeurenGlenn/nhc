@@ -228,7 +228,7 @@ class NHCController:
                     elif message["event"] == "listthermostat":
                         _LOGGER.debug(f"listthermostat: {message}")
                         for data in message["data"]:
-                            await self.handle_thermostat_event(message["data"])
+                            await self.handle_thermostat_event(data)
                     else:
                         for data in message["data"]:
                             await self.handle_event(data)
