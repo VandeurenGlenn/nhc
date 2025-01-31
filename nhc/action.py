@@ -33,29 +33,27 @@ class NHCBaseAction:
 
         if (
             "location" in action
-            and action["location"] is not None
-            and action["location"] != ""
         ):
             self._suggested_area = controller.locations[action["location"]]
 
     
     @property
-    def state(self):
+    def state(self) -> str | int:
         """A Niko Action state."""
         return self._state
     
     @property
-    def type(self):
+    def type(self) -> int:
         """The Niko Action type."""
         return self._type
 
     @property
-    def suggested_area(self):
+    def suggested_area(self) -> str | None:
         """A Niko Action location."""
         return self._suggested_area
 
     @property
-    def name(self):
+    def name(self) -> str:
         """A Niko Action state."""
         return self._name
 

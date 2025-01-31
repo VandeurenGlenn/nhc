@@ -19,7 +19,7 @@ class NHCController:
         self._host: str = host
         self._port: int = port
         self._actions: list[NHCLight | NHCCover | NHCFan] = []
-        self._locations: dict[str, str] = {}
+        self._locations: dict[int, str] = {}
         self._energy: dict[str, NHCEnergy] = {}
         self._thermostats: dict[str, NHCThermostat] = {}
         self._system_info: dict[str, Any] = {}
