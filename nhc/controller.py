@@ -137,10 +137,10 @@ class NHCController:
                 raise UnknownError(error)
         return response['data']
 
-    def execute(self, id: str, value: int) -> None:
+    def execute(self, id: int, value: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
         def job():
-            self._send('{"cmd": "%s", "id": "%s", "value1": "%s"}' % ("executeactions", str(id), str(value)))
+            self._send('{"cmd": "%s", "id": %s, "value1": %s}' % ("executeactions", id, value))
         
         self.jobs.append(job)
         if not self.jobRunning:
