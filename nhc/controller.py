@@ -136,7 +136,8 @@ class NHCController:
     async def execute(self, id: int, value: int):
         """Add an action to jobs to make sure only one command happens at a time."""
         async def job():
-            await self._send('{"cmd": "%s", "id": %s, "value1": %s}' % ("executeactions", id, value))
+            s = '{"cmd": "%s", "id": %s, "value1": %s}' % ("executeactions", id, value)
+            await self._connection.write(s.encode())
         
         self.jobs.append(job)
 
@@ -146,8 +147,9 @@ class NHCController:
     async def execute_thermostat(self, id: int, mode: int, overruletime: str, overrule: int, setpoint: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
         async def job():
-            await self._send('{"cmd": "%s", "id": %s, "mode": %s, "overruletime": "%s", "overrule": %s, setpoint: %s}' % ("executethermostat", id, mode, str(overruletime), overrule, setpoint))
-        
+            s = '{"cmd": "%s", "id": %s, "mode": %s, "overruletime": "%s", "overrule": %s, setpoint: %s}' % ("executethermostat", id, mode, str(overruletime), overrule, setpoint)
+            await self._connection.write(s.encode())
+            
         self.jobs.append(job)
 
         if not self.jobRunning:
@@ -199,11 +201,7 @@ class NHCController:
         s = '{"cmd":"startevents"}'
 
         try:
-            # self._reader, self._writer = \
-            #     await asyncio.open_connection(self._host, self._port)
-
-            self._connection.writer.write(s.encode())
-            await self._connection.writer.drain()
+            await self._connection.write(s.encode())
 
             async for line in self._connection.reader:
                 message = json.loads(line.decode())
