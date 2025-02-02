@@ -41,9 +41,9 @@ class AsyncNetcat:
 
 class NHCConnection(AsyncNetcat):
     """ A class to communicate with Niko Home Control. """
-    async def send(self, s):
+    async def send(self, s: str):
         await super().send(s.encode())
         return await self.receive_line()
     
-    async def write(self, data):
-        await super().send(data)
+    async def write(self, s: str):
+        await super().send(s.encode())

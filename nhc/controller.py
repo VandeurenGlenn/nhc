@@ -136,8 +136,7 @@ class NHCController:
     async def execute(self, id: int, value: int):
         """Add an action to jobs to make sure only one command happens at a time."""
         async def job():
-            s = '{"cmd": "%s", "id": %s, "value1": %s}' % ("executeactions", id, value)
-            await self._connection.write(s.encode())
+            await self._connection.write('{"cmd": "%s", "id": %s, "value1": %s}' % ("executeactions", id, value))
         
         self.jobs.append(job)
 
@@ -147,8 +146,7 @@ class NHCController:
     async def execute_thermostat(self, id: int, mode: int, overruletime: str, overrule: int, setpoint: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
         async def job():
-            s = '{"cmd": "%s", "id": %s, "mode": %s, "overruletime": "%s", "overrule": %s, setpoint: %s}' % ("executethermostat", id, mode, str(overruletime), overrule, setpoint)
-            await self._connection.write(s.encode())
+            await self._connection.write('{"cmd": "%s", "id": %s, "mode": %s, "overruletime": "%s", "overrule": %s, setpoint: %s}' % ("executethermostat", id, mode, str(overruletime), overrule, setpoint))
             
         self.jobs.append(job)
 
@@ -198,10 +196,8 @@ class NHCController:
         """
         Listen for events. When an event is received, call callback functions.
         """
-        s = '{"cmd":"startevents"}'
-
         try:
-            await self._connection.write(s.encode())
+            await self._connection.write('{"cmd":"startevents"}')
 
             async for line in self._connection.reader:
                 message = json.loads(line.decode())
