@@ -33,11 +33,11 @@ class NHCThermostat(NHCBaseAction):
     def ecosave(self):
         return self._ecosave
     
-    def set_mode(self, mode):
-        self._controller.execute_thermostat(self.id, mode, self._overruletime, self._overrule, self._setpoint)
+    async def set_mode(self, mode):
+        await self._controller.execute_thermostat(self.id, mode, self._overruletime, self._overrule, self._setpoint)
 
-    def set_temperature(self, setpoint):
-        self._controller.execute_thermostat(self.id, self._state, self._overruletime, self._overrule, setpoint)
+    async def set_temperature(self, setpoint):
+        await self._controller.execute_thermostat(self.id, self._state, self._overruletime, self._overrule, setpoint)
     
     def update_state(self, data):
         super().update_state(data)

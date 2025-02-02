@@ -7,11 +7,11 @@ class NHCCover(NHCAction):
     def is_open(self) -> bool:
         return self._state > 0
 
-    def open(self) -> None:
-        self._controller.execute(self.id, COVER_OPEN)
+    async def open(self) -> None:
+        await self._controller.execute(self.id, COVER_OPEN)
 
-    def close(self) -> None:
-        self._controller.execute(self.id, COVER_CLOSE)
+    async def close(self) -> None:
+        await self._controller.execute(self.id, COVER_CLOSE)
 
-    def stop(self) -> None:
-        self._controller.execute(self.id, COVER_STOP)
+    async def stop(self) -> None:
+        await self._controller.execute(self.id, COVER_STOP)

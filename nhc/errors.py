@@ -2,7 +2,7 @@
 class UnknownError(Exception):
     pass
 
-class ToManyRequestsError(Exception):
+class ToManyRequestsOrSyntaxError(Exception):
     pass
 
 class ConnectionError(Exception):

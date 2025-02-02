@@ -1,21 +1,22 @@
-from .errors import UnknownError, ToManyRequestsError
+from nhc.const import DEFAULT_PORT
+from .errors import UnknownError, ToManyRequestsOrSyntaxError
 from .connection import NHCConnection
 from .light import NHCLight
 from .cover import NHCCover
 from .fan import NHCFan
 from .energy import NHCEnergy
 from .thermostat import NHCThermostat
+from .events import NHCActionEvent, NHCEnergyEvent, NHCThermostatEvent
 import json
 import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Any
-from .events import NHCActionEvent, NHCEnergyEvent, NHCThermostatEvent
 import logging
 
 _LOGGER = logging.getLogger('nikohomecontrol')
 
 class NHCController:
-    def __init__(self, host, port=8000) -> None:
+    def __init__(self, host, port=DEFAULT_PORT) -> None:
         self._host: str = host
         self._port: int = port
         self._actions: list[NHCLight | NHCCover | NHCFan] = []
@@ -80,37 +81,32 @@ class NHCController:
     def energy(self) -> dict[str, Any]:
         return self._energy
     
-    def jobHandler(self):
+    async def jobHandler(self):
         '''Handle the job queue'''
         if len(self.jobs) > 0 and not self.jobRunning:
             self.jobRunning = True
-            _LOGGER.debug(f"jobRunning: {self.jobRunning}")
             job = self.jobs.pop(0)
-            job()
+            await job()
             self.jobRunning = False
-            _LOGGER.debug(f"jobRunning: {self.jobRunning}")
-            self.jobHandler()
+            await self.jobHandler()
 
     async def connect(self) -> None:
         await self._connection.connect()
 
-        actions = self._send('{"cmd": "listactions"}')
-        locations = self._send('{"cmd": "listlocations"}')
-
-        for location in locations:
+        for location in await self._send('{"cmd": "listlocations"}'):
             self._locations[location["id"]] = location["name"]
 
-        for thermostat in self._send('{"cmd": "listthermostat"}'):
+        for thermostat in await self._send('{"cmd": "listthermostat"}'):
             entity =  NHCThermostat(self, thermostat)
-            self._thermostats[entity.id] = entity
+            self._thermostats[entity["id"]] = entity
 
-        for energy in self._send('{"cmd": "listenergy"}'):
+        for energy in await self._send('{"cmd": "listenergy"}'):
             entity = NHCEnergy(self, energy)
-            self._energy[entity.id] = entity
+            self._energy[entity["id"]] = entity
 
-        self._system_info = self._send('{"cmd": "systeminfo"}')
+        self._system_info = await self._send('{"cmd": "systeminfo"}')
 
-        for (_action) in actions:
+        for (_action) in await self._send('{"cmd": "listactions"}'):
             entity = None
             if (_action["type"] == 1 or _action["type"] == 2):
                 entity = NHCLight(self, _action)
@@ -120,41 +116,42 @@ class NHCController:
                 entity = NHCCover(self, _action)
             if (entity is not None):
                 self._actions.append(entity)
-
+        
         self._listen_task = asyncio.create_task(self._listen())
         
-    def _send(self, data) -> dict[str, Any] | None:
-        response = json.loads(self._connection.send(data))
+    async def _send(self, data) -> dict[str, Any] | None:
+        response = json.loads(await self._connection.send(data))
         if 'error' in response['data']:
             error = response['data']['error']
             if error:
                 if error == 100:
                     raise Exception("NOT_FOUND")
                 if error == 200:
-                    raise ToManyRequestsError(error)
+                    raise ToManyRequestsOrSyntaxError(error)
                 if error == 300:
                     raise Exception("ERROR")
                 raise UnknownError(error)
         return response['data']
 
-    def execute(self, id: int, value: int) -> None:
+    async def execute(self, id: int, value: int):
         """Add an action to jobs to make sure only one command happens at a time."""
-        def job():
-            self._send('{"cmd": "%s", "id": %s, "value1": %s}' % ("executeactions", id, value))
-        
-        self.jobs.append(job)
-        if not self.jobRunning:
-            self.jobHandler()
-
-    def execute_thermostat(self, id: int, mode: int, overruletime: str, overrule: int, setpoint: int) -> None:
-        """Add an action to jobs to make sure only one command happens at a time."""
-        def job():
-            self._send('{"cmd": "%s", "id": %s, "mode": %s, "overruletime": "%s", "overrule": %s, setpoint: %s}' % ("executethermostat", id, mode, str(overruletime), overrule, setpoint))
+        async def job():
+            await self._send('{"cmd": "%s", "id": %s, "value1": %s}' % ("executeactions", id, value))
         
         self.jobs.append(job)
 
         if not self.jobRunning:
-            self.jobHandler()
+            await self.jobHandler()
+
+    async def execute_thermostat(self, id: int, mode: int, overruletime: str, overrule: int, setpoint: int) -> None:
+        """Add an action to jobs to make sure only one command happens at a time."""
+        async def job():
+            await self._send('{"cmd": "%s", "id": %s, "mode": %s, "overruletime": "%s", "overrule": %s, setpoint: %s}' % ("executethermostat", id, mode, str(overruletime), overrule, setpoint))
+        
+        self.jobs.append(job)
+
+        if not self.jobRunning:
+            await self.jobHandler()
 
     def register_callback(
         self, action_id: str, callback: Callable[[int], Awaitable[None]]
@@ -202,16 +199,15 @@ class NHCController:
         s = '{"cmd":"startevents"}'
 
         try:
-            self._reader, self._writer = \
-                await asyncio.open_connection(self._host, self._port)
+            # self._reader, self._writer = \
+            #     await asyncio.open_connection(self._host, self._port)
 
-            self._writer.write(s.encode())
-            await self._writer.drain()
+            self._connection.writer.write(s.encode())
+            await self._connection.writer.drain()
 
-            async for line in self._reader:
+            async for line in self._connection.reader:
                 message = json.loads(line.decode())
                 if "event" in message and message["event"] != "startevents":
-                    # The controller also sends energy and thermostat events, so we make sure we handle those separately
                     if message["event"] == "getlive":
                         await self.handle_energy_event(message["data"])
                     elif message["event"] == "listthermostat":
@@ -221,5 +217,4 @@ class NHCController:
                         for data in message["data"]:
                             await self.handle_event(data)
         finally:
-            self._writer.close()
-            await self._writer.wait_closed()
+            await self._connection.close()

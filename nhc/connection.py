@@ -1,64 +1,46 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+import asyncio
 
-"""
-nhcconnection.py
+class AsyncNetcat:
 
-This is a tool to communicate with Niko Home Control.
+    reader: asyncio.StreamReader
+    writer: asyncio.StreamWriter
+    host: str
+    port: int
 
-You will have to provide an IP address and a port number.
-
-License: MIT https://opensource.org/licenses/MIT
-Source: https://github.com/NoUseFreak/niko-home-control
-Author: Dries De Peuter
-"""
-import nclib
-from .const import DEFAULT_PORT
-
-NHC_TIMEOUT = 2000
-
-class NHCConnection:
-    """ A class to communicate with Niko Home Control. """
-    def __init__(self, ip: str, port:int=DEFAULT_PORT):
-        self._socket = None
-        self._ip = ip
-        self._port = port
+    def __init__(self, host: str, port: int):
+        self.host = host
+        self.port = port
 
     async def connect(self):
-        """
-        Connect to the Niko Home Control.
-        """
-        self._socket = nclib.Netcat((self._ip, self._port), udp=False)
-        self._socket.settimeout(NHC_TIMEOUT)
+        """Establishes an asynchronous connection."""
+        self.reader, self.writer = await asyncio.open_connection(self.host, self.port)
 
-    def __del__(self):
-        if self._socket is not None:
-            self._socket.shutdown(1)
-            self._socket.close()
+    async def send(self, data: bytes):
+        """Sends data asynchronously."""
+        if self.writer:
+            self.writer.write(data)
+            await self.writer.drain()
 
-    def receive(self):
-        """
-        Receives information from the Netcat socket.
-        """
-        return self._socket.recv().decode()
+    async def receive(self, num_bytes: int = 1024) -> bytes:
+        """Receives data asynchronously."""
+        if self.reader:
+            return await self.reader.read(num_bytes)
+        return b""
 
-    def read(self):
-        return self._receive_until(b'\r')
+    async def receive_line(self) -> str:
+        """Receives a single line asynchronously."""
+        if self.reader:
+            return await self.reader.readline()
+        return ""
 
-    def _receive_until(self, s):
-        """
-        Recieve data from the socket until the given substring is observed.
-        Data in the same datagram as the substring, following the substring,
-        will not be returned and will be cached for future receives.
-        """
-        return self._socket.recv_until(s)
+    async def close(self):
+        """Closes the connection."""
+        if self.writer:
+            self.writer.close()
+            await self.writer.wait_closed()
 
-    def send(self, s):
-        """
-        Sends the given command to Niko Home Control and returns the output of
-        the system.
-
-        Aliases: write, put, sendall, send_all
-        """
-        self._socket.send(s.encode())
-        return self.read()
+class NHCConnection(AsyncNetcat):
+    """ A class to communicate with Niko Home Control. """
+    async def send(self, s):
+        await super().send(s.encode())
+        return await self.receive_line()

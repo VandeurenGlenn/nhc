@@ -15,5 +15,5 @@ class NHCFan(NHCAction):
 
     return PRESET_MODES['low']
 
-  def set_mode(self, preset_mode: str) -> None:
-      self._controller.execute(self.id, PRESET_MODES[preset_mode])
+  async def set_mode(self, preset_mode: str) -> None:
+      await self._controller.execute(self.id, PRESET_MODES[preset_mode])
