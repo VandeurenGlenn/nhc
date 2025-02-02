@@ -44,3 +44,6 @@ class NHCConnection(AsyncNetcat):
     async def send(self, s):
         await super().send(s.encode())
         return await self.receive_line()
+    
+    async def write(self, data):
+        await super().send(data)
