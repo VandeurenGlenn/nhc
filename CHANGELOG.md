@@ -37,3 +37,7 @@
 # v0.4.1
 
 - executions don't need their data returned and would block the events
+
+# v0.4.2
+
+- fix missing write
