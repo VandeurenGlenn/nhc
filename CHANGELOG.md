@@ -41,3 +41,7 @@
 # v0.4.2
 
 - fix missing write
+
+# 0.4.3
+
+- let `connection.write` handle the string
