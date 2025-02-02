@@ -42,6 +42,10 @@
 
 - fix missing write
 
-# 0.4.3
+# v0.4.3
 
 - let `connection.write` handle the string
+
+# v0.4.4
+
+- remove asyncio from requirements
