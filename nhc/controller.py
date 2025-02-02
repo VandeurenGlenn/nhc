@@ -149,7 +149,7 @@ class NHCController:
     def execute_thermostat(self, id: int, mode: int, overruletime: str, overrule: int, setpoint: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
         def job():
-            self._send('{"cmd": "%s", "id": %s, "mode": "%s", "overruletime": "%s", "overrule": %s, setpoint: %s}' % ("executethermostat", id, mode, str(overruletime), overrule, setpoint))
+            self._send('{"cmd": "%s", "id": %s, "mode": %s, "overruletime": "%s", "overrule": %s, setpoint: %s}' % ("executethermostat", id, mode, str(overruletime), overrule, setpoint))
         
         self.jobs.append(job)
 
