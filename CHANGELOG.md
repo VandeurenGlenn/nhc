@@ -27,3 +27,9 @@
 # v0.3.9
 
 - fix event not running
+
+# v0.4.0
+
+- port to async
+- initial thermostat support
+- initial energy support
