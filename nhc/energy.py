@@ -1,5 +1,10 @@
 from .action import NHCEnergyAction
 
 class NHCEnergy(NHCEnergyAction):
-    def __init__(self, controller, data):
-        super().__init__(controller, data)
+    @property
+    def id(self):
+        return f"energy-{self._id}"
+    
+    @property
+    def action_id(self):
+        return self._id

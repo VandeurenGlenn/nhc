@@ -98,11 +98,11 @@ class NHCController:
 
         for thermostat in await self._send('{"cmd": "listthermostat"}'):
             entity =  NHCThermostat(self, thermostat)
-            self._thermostats[entity["id"]] = entity
+            self._thermostats[entity.action_id] = entity
 
         for energy in await self._send('{"cmd": "listenergy"}'):
             entity = NHCEnergy(self, energy)
-            self._energy[entity["id"]] = entity
+            self._energy[entity.action_id] = entity
 
         self._system_info = await self._send('{"cmd": "systeminfo"}')
 
@@ -181,16 +181,15 @@ class NHCController:
 
     async def handle_energy_event(self, event: NHCEnergyEvent) -> None:
         """Handle an energy event."""
-        id = f"energy-{event['channel']}"
-        self._energy[id].update_state(event["v"])
-        await self.async_dispatch_update(id, event["v"])
+        entity= self._energy[event['channel']]
+        entity.update_state(event["v"])
+        await self.async_dispatch_update(entity.id, event["v"])
 
     async def handle_thermostat_event(self, event: NHCThermostatEvent) -> None:
         """Handle an energy event."""
-        _LOGGER.debug(f"handle_thermostat_event: {event}")
-        id = f"thermostat-{event['id']}"
-        self._thermostats[id].update_state(event)
-        await self.async_dispatch_update(id, event)
+        entity = self._thermostats[event['id']]
+        entity.update_state(event)
+        await self.async_dispatch_update(entity.id, event)
 
     async def _listen(self) -> None:
         """

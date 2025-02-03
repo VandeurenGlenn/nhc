@@ -24,7 +24,11 @@ class NHCEnergyEvent():
         self._channel = event["channel"]
         self._v = event["v"]
 
-class NHCThermostatEvent: 
+class NHCThermostatEvent(): 
+    @property
+    def id(self) -> int:
+        return self._id
+    
     @property
     def mode(self) -> int:
         return self._mode
@@ -50,6 +54,7 @@ class NHCThermostatEvent:
         return self._ecosave
     
     def __init__(self, event):
+        self._id = event["id"]
         self._mode = event["mode"]
         self._setpoint = event["setpoint"]
         self._measured = event["measured"]

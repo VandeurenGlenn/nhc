@@ -11,13 +11,7 @@ class NHCBaseAction:
         """Init Niko Base Action."""
         self._name = action["name"]
         self._controller = controller
-        
-        if ("channel" in action) and (action["channel"] is not None):
-            self._id = f"energy-{action["channel"]}"
-        elif ("mode" in action) and (action["mode"] is not None):
-            self._id = f"thermostat-{action["id"]}"
-        else:
-            self._id = action["id"]
+        self._id = action["id"]
 
         if ("value1" in action):
             self._state = action["value1"]
