@@ -16,19 +16,20 @@ import logging
 _LOGGER = logging.getLogger('nikohomecontrol')
 
 class NHCController:
+    _actions: list[NHCLight | NHCCover | NHCFan] = []
+    _locations: dict[int, str] = {}
+    _energy: dict[str, NHCEnergy] = {}
+    _thermostats: dict[str, NHCThermostat] = {}
+    _system_info: dict[str, Any] = {}
+    _callbacks: dict[str, list[Callable[[int], Awaitable[None]]]] = {}
+    jobs = []
+    jobRunning = False
+    
     def __init__(self, host, port=DEFAULT_PORT) -> None:
         self._host: str = host
         self._port: int = port
-        self._actions: list[NHCLight | NHCCover | NHCFan] = []
-        self._locations: dict[int, str] = {}
-        self._energy: dict[str, NHCEnergy] = {}
-        self._thermostats: dict[str, NHCThermostat] = {}
-        self._system_info: dict[str, Any] = {}
         self._connection = NHCConnection(host, port)
-        self._callbacks: dict[str, list[Callable[[int], Awaitable[None]]]] = {}
-        self.jobs = []
-        self.jobRunning = False
-
+        
     @property
     def host(self) -> str:
         return self._host
@@ -80,15 +81,6 @@ class NHCController:
     @property
     def energy(self) -> dict[str, Any]:
         return self._energy
-    
-    async def jobHandler(self):
-        '''Handle the job queue'''
-        if len(self.jobs) > 0 and not self.jobRunning:
-            self.jobRunning = True
-            job = self.jobs.pop(0)
-            await job()
-            self.jobRunning = False
-            await self.jobHandler()
 
     async def connect(self) -> None:
         await self._connection.connect()
@@ -132,26 +124,34 @@ class NHCController:
                     raise Exception("ERROR")
                 raise UnknownError(error)
         return response['data']
+    
+    async def _handle_job(self, job):
+        self.jobs.append(job)
+        if not self.jobRunning:
+            await self.jobHandler()
+    
+    async def jobHandler(self):
+        '''Handle the job queue'''
+        if len(self.jobs) > 0 and not self.jobRunning:
+            self.jobRunning = True
+            job = self.jobs.pop(0)
+            await job()
+            self.jobRunning = False
+            await self.jobHandler()
 
     async def execute(self, id: int, value: int):
         """Add an action to jobs to make sure only one command happens at a time."""
         async def job():
             await self._connection.write('{"cmd": "%s", "id": %s, "value1": %s}' % ("executeactions", id, value))
         
-        self.jobs.append(job)
-
-        if not self.jobRunning:
-            await self.jobHandler()
+        await self._handle_job(job)
 
     async def execute_thermostat(self, id: int, mode: int, overruletime: str, overrule: int, setpoint: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
         async def job():
             await self._connection.write('{"cmd": "%s", "id": %s, "mode": %s, "overruletime": "%s", "overrule": %s, setpoint: %s}' % ("executethermostat", id, mode, str(overruletime), overrule, setpoint))
-            
-        self.jobs.append(job)
-
-        if not self.jobRunning:
-            await self.jobHandler()
+        
+        await self._handle_job(job)
 
     def register_callback(
         self, action_id: str, callback: Callable[[int], Awaitable[None]]
