@@ -50,6 +50,15 @@
 
 - remove asyncio from requirements
 
-# v0.4.4
+# v0.4.5
 
 - update the way thermostat and energy ids are handled
+
+# v0.4.6
+
+- fix energy id
+
+# v0.4.7
+
+- fix thermostat state
+- cleanup controller a bit
