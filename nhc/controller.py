@@ -146,10 +146,17 @@ class NHCController:
         
         await self._handle_job(job)
 
-    async def execute_thermostat(self, id: int, mode: int, overruletime: str, overrule: int, setpoint: int) -> None:
+    async def execute_thermostat_mode(self, id: int, mode: int, overruletime: str, overrule: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
         async def job():
-            await self._connection.write('{"cmd": "%s", "id": %s, "mode": %s, "overruletime": "%s", "overrule": %s, setpoint: %s}' % ("executethermostat", id, mode, str(overruletime), overrule, setpoint))
+            await self._connection.write('{"cmd": "%s", "id": %s, "mode": %s, "overruletime": %s, "overrule": %s}' % ("executethermostatmode", id, mode, overruletime, overrule))
+        
+        await self._handle_job(job)
+
+    async def execute_thermostat_set_temperature(self, id: int, setpoint: int) -> None:
+        """Add an action to jobs to make sure only one command happens at a time."""
+        async def job():
+            await self._connection.write('{"cmd": "%s", "id": %s, "overrule": %s, "overruletime": "23:59",}' % ("executethermostatsetpoint", id, setpoint))
         
         await self._handle_job(job)
 
@@ -181,7 +188,7 @@ class NHCController:
 
     async def handle_energy_event(self, event: NHCEnergyEvent) -> None:
         """Handle an energy event."""
-        entity= self._energy[event['channel']]
+        entity = self._energy[event['channel']]
         entity.update_state(event["v"])
         await self.async_dispatch_update(entity.id, event["v"])
 
