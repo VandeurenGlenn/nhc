@@ -48,7 +48,7 @@ class NHCThermostat(NHCBaseAction):
         await self._controller.execute_thermostat(self._id, self._state, self._overruletime, self._overrule, setpoint)
     
     def update_state(self, data):
-        super().update_state(data)
+        self._state = data["mode"]
         self._setpoint = data["setpoint"]
         self._measured = data["measured"]
         self._overrule = data["overrule"]
