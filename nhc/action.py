@@ -11,7 +11,11 @@ class NHCBaseAction:
         """Init Niko Base Action."""
         self._name = action["name"]
         self._controller = controller
-        self._id = action["id"]
+
+        if ("channel" in action):
+            self._id = action["channel"]
+        else:
+            self._id = action["id"]
 
         if ("value1" in action):
             self._state = action["value1"]
