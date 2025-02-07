@@ -149,14 +149,14 @@ class NHCController:
     async def execute_thermostat_mode(self, id: int, mode: int, overruletime: str, overrule: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
         async def job():
-            await self._connection.write('{"cmd": "%s", "id": %s, "mode": %s, "overruletime": %s, "overrule": %s}' % ("executethermostatmode", id, mode, overruletime, overrule))
+            await self._connection.write('{"cmd": "%s", "id": %s, "mode": %s}' % ("executethermostat", id, mode))
         
         await self._handle_job(job)
 
     async def execute_thermostat_set_temperature(self, id: int, setpoint: int) -> None:
         """Add an action to jobs to make sure only one command happens at a time."""
         async def job():
-            await self._connection.write('{"cmd": "%s", "id": %s, "overrule": %s, "overruletime": "23:59",}' % ("executethermostatsetpoint", id, setpoint))
+            await self._connection.write('{"cmd": "%s", "id": %s, "overrule": %s, "overruletime": "23:59",}' % ("executethermostat", id, setpoint))
         
         await self._handle_job(job)
 
