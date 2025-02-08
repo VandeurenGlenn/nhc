@@ -62,3 +62,7 @@
 
 - fix thermostat state
 - cleanup controller a bit
+
+# v0.4.10
+
+- fix thermostat execution
