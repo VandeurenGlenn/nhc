@@ -18,7 +18,11 @@ class NHCBaseAction:
             self._id = action["id"]
 
         if ("value1" in action):
-            self._state = action["value1"]
+            if action.type == 2:
+                """This is a dimmable light action."""
+                self._state = round(action["value1"] * 2.55)
+            else:
+                self._state = action["value1"]
         elif ("v" in action):
             """This is a energy action."""
             self._state = action["v"]
@@ -62,7 +66,7 @@ class NHCBaseAction:
     
     def update_state(self, state):
         """Update state."""
-        self._state = state
+        self._state = round(state * 2.55) if self._type == 2 else state
 
 class NHCAction(NHCBaseAction):
     """A Niko Action."""

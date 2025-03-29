@@ -66,3 +66,7 @@
 # v0.4.10
 
 - fix thermostat execution
+
+# v0.4.11
+
+- handle thermostat and dimmable light unit conversion internal

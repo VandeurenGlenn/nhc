@@ -9,7 +9,10 @@ class NHCLight(NHCAction):
 
     async def turn_on(self, brightness=255) -> None:
         """Turn On."""
-        await self._controller.execute(self.id, brightness)
+        if (self.is_dimmable):
+            await self._controller.execute(self.id, round(brightness / 2.55))
+        else:
+            await self._controller.execute(self.id, brightness)
 
     async def turn_off(self) -> None:
         """Turn off."""
