@@ -3,8 +3,8 @@ from .action import NHCBaseAction
 class NHCThermostat(NHCBaseAction):
     def __init__(self, controller, data):
         super().__init__(controller, data)
-        self._measured = data["measured"]
-        self._setpoint = data["setpoint"]
+        self._measured = data["measured"] / 10
+        self._setpoint = data["setpoint"] / 10
         self._overrule = data["overrule"]
         self._overruletime = data["overruletime"]
         self._ecosave = data["ecosave"]
@@ -45,12 +45,12 @@ class NHCThermostat(NHCBaseAction):
         await self._controller.execute_thermostat_mode(self._id, mode, self._overruletime, self._overrule)
 
     async def set_temperature(self, setpoint):
-        await self._controller.execute_thermostat_set_temperature(self._id, setpoint)
+        await self._controller.execute_thermostat_set_temperature(self._id, setpoint * 10)
     
     def update_state(self, data):
         self._state = data["mode"]
-        self._setpoint = data["setpoint"]
-        self._measured = data["measured"]
+        self._setpoint = data["setpoint"] / 10
+        self._measured = data["measured"] / 10
         self._overrule = data["overrule"]
         self._overruletime = data["overruletime"]
         self._ecosave = data["ecosave"]
