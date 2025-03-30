@@ -18,7 +18,7 @@ class NHCBaseAction:
             self._id = action["id"]
 
         if ("value1" in action):
-            if action.type == 2:
+            if action["type"] == 2:
                 """This is a dimmable light action."""
                 self._state = round(action["value1"] * 2.55)
             else:
