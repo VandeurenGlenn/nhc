@@ -18,6 +18,10 @@ THERMOSTAT_MODES = {
     7: "prog3",
 }
 
+THERMOSTAT_MODES_REVERSE = {  
+    value: key for key, value in THERMOSTAT_MODES.items()  
+}
+
 ENERGY_TYPES = {
     0: "import",
     1: "sub_usage", 
