@@ -11,9 +11,6 @@ import json
 import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Any
-import logging
-
-_LOGGER = logging.getLogger('nikohomecontrol')
 
 class NHCController:
     _actions: list[NHCLight | NHCCover | NHCFan] = []
