@@ -70,3 +70,12 @@
 # v0.4.11
 
 - handle thermostat and dimmable light unit conversion internal
+
+# v0.4.12
+
+- Fix Dict error
+
+# v0.4.13
+
+- Remove unused logging setup from controller.py
+- Add reverse mapping for thermostat modes
