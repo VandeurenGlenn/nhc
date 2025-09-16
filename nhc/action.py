@@ -68,6 +68,15 @@ class NHCBaseAction:
         """Update state."""
         self._state = round(state * 2.55) if self._type == 2 else state
 
+
+class NHCScene(NHCBaseAction):
+    """A Niko Scene."""
+
+    @property
+    def is_scene(self) -> bool:
+        """Is a scene."""
+        return self.type == 0
+
 class NHCAction(NHCBaseAction):
     """A Niko Action."""
 
@@ -103,3 +112,4 @@ class NHCEnergyAction(NHCBaseAction):
     def is_export(self) -> bool:
         """Is a export energy."""
         return self.type == 2
+    
