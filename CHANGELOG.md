@@ -82,4 +82,8 @@
 
 # v0.5.O
 
-- Add scene suppor†
+- Add scene support
+
+# v0.5.1
+
+- add nhcscene to nhcAction
