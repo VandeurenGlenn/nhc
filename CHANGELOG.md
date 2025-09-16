@@ -79,3 +79,7 @@
 
 - Remove unused logging setup from controller.py
 - Add reverse mapping for thermostat modes
+
+# v0.5.O
+
+- Add scene suppor†
