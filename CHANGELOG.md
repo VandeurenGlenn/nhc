@@ -87,3 +87,7 @@
 # v0.5.1
 
 - add nhcscene to nhcAction
+
+# v0.5.2
+
+- better typings
