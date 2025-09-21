@@ -3,5 +3,5 @@ from .action import NHCAction
 class NHCScene(NHCAction):
 
     async def activate(self) -> None:
-        """Activate the scene."""
+        """Turn On."""
         await self._controller.execute(self.id, 255)
