@@ -91,3 +91,7 @@
 # v0.5.2
 
 - better typings
+
+# v0.5.3
+
+- fix scenes missing
