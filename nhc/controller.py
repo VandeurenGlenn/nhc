@@ -48,6 +48,7 @@ class NHCController:
     def actions(self) -> list[NHCLight | NHCCover | NHCFan]:
         return self._actions
 
+    @property
     def scenes(self) -> list[NHCScene]:
         scenes: list[NHCScene] = []
         for action in self._actions:
