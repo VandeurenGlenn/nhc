@@ -95,3 +95,7 @@
 # v0.5.3
 
 - fix scenes missing
+
+# v0.6.O
+
+- Fix brightness not set when toggling.
