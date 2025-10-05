@@ -10,11 +10,10 @@ class NHCLight(NHCAction):
 
     async def turn_on(self, brightness: Optional[int] = None) -> None:
         """Turn On."""
-        if (brightness is None) :
+        if (brightness is None):
             brightness = self._state if self._state > 0 else 100
-        else: 
+        else:
             brightness = round(brightness / 2.55)
-        
         await self._controller.execute(self.id, brightness)
 
     async def turn_off(self) -> None:
