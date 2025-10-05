@@ -10,13 +10,12 @@ class NHCLight(NHCAction):
 
     async def turn_on(self, brightness: Optional[int] = None) -> None:
         """Turn On."""
-        if (self.is_dimmable):
-            #make sure brightness is passed when turning on a dimmable light using toggle
-            if (brightness is None) :
-                brightness = self._state if self._state > 0 else 255
-            await self._controller.execute(self.id, round(brightness / 2.55))
-        else:
-            await self._controller.execute(self.id, brightness)
+        if (brightness is None) :
+            brightness = self._state if self._state > 0 else 100
+        else: 
+            brightness = round(brightness / 2.55)
+        
+        await self._controller.execute(self.id, brightness)
 
     async def turn_off(self) -> None:
         """Turn off."""
