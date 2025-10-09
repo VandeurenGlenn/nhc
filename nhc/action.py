@@ -94,7 +94,7 @@ class NHCAction(NHCBaseAction):
     @property
     def is_cover(self) -> bool:
         """Is a cover."""
-        return self.type == 4
+        return self.type == 4 or self.type == 5
 
 class NHCEnergyAction(NHCBaseAction):
     """A Niko Energy Action."""
