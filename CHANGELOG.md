@@ -99,3 +99,7 @@
 # v0.6.1
 
 - Fix brightness not set when toggling.
+
+# v0.7.0
+
+- Add blinds as a cover (temporary minimal support for blinds)

@@ -5,7 +5,7 @@ setuptools.setup(
     description='SDK for Niko Home Control',
     license='MIT',
     url='https://github.com/vandeurenglenn/nhc',
-    version='0.6.1',
+    version='0.7.0',
     author='Vandeuren Glenn',
     author_email='vandeurenglenn@gmail.com',
     maintainer='Vandeuren Glenn',
