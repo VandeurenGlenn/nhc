@@ -61,3 +61,21 @@ class NHCThermostatEvent():
         self._overrule = event["overrule"]
         self._overruletime = event["overruletime"]
         self._ecosave = event["ecosave"]
+
+class NHCAlarmEvent():
+    @property
+    def id(self) -> int:
+        return self._id
+    
+    @property
+    def type(self) -> int:
+        return self._type
+    
+    @property
+    def text(self) -> str:
+        return self._text
+    
+    def __init__(self, event):
+        self._id = event["id"]
+        self._type = event["type"]
+        self._text = event["text"]
