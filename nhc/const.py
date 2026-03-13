@@ -27,3 +27,8 @@ ENERGY_TYPES = {
     1: "sub_usage", 
     2: "export",
 }
+
+MESSAGE_TYPES = {
+    0: "alarm",
+    1: "notice"
+}

@@ -7,7 +7,7 @@ from .cover import NHCCover
 from .fan import NHCFan
 from .energy import NHCEnergy
 from .thermostat import NHCThermostat
-from .events import NHCActionEvent, NHCEnergyEvent, NHCThermostatEvent
+from .events import NHCActionEvent, NHCEnergyEvent, NHCThermostatEvent, NHCAlarmEvent
 import json
 import asyncio
 from collections.abc import Awaitable, Callable
@@ -20,6 +20,7 @@ class NHCController:
     _thermostats: dict[str, NHCThermostat] = {}
     _system_info: dict[str, Any] = {}
     _callbacks: dict[str, list[Callable[[int], Awaitable[None]]]] = {}
+    _alarm_callbacks: list[Callable[[int], Awaitable[None]]] = []
     jobs = []
     jobRunning = False
     
@@ -181,6 +182,17 @@ class NHCController:
 
         return remove_callback
 
+    def register_alarm_callback(
+        self, callback: Callable[[int], Awaitable[None]]
+    ) -> Callable[[], None]:
+        """Register a callback for alarm updates."""
+        self._alarm_callbacks.append(callback)
+
+        def remove_callback() -> None:
+            self._alarm_callbacks.remove(callback)
+
+        return remove_callback
+
     async def async_dispatch_update(self, action_id: str, value: int) -> None:
         """Dispatch an update to all registered callbacks."""
         for callback in self._callbacks.get(action_id, []):
@@ -206,6 +218,11 @@ class NHCController:
         entity.update_state(event)
         await self.async_dispatch_update(entity.id, event)
 
+    async def handle_alarm_event(self, event: NHCAlarmEvent) -> None:
+        """Handle an alarm event."""
+        for callback in self._alarm_callbacks:
+            await callback(event)
+
     async def _listen(self) -> None:
         """
         Listen for events. When an event is received, call callback functions.
@@ -221,6 +238,8 @@ class NHCController:
                     elif message["event"] == "listthermostat":
                         for data in message["data"]:
                             await self.handle_thermostat_event(data)
+                    elif message["event"] == "getalarms":
+                        await self.handle_alarm_event(NHCAlarmEvent(message["data"]))
                     else:
                         for data in message["data"]:
                             await self.handle_event(data)
