@@ -28,7 +28,7 @@ ENERGY_TYPES = {
     2: "export",
 }
 
-MESSAGE_TYPES = {
+ALARM_TYPES = {
     0: "alarm",
     1: "notice"
 }
