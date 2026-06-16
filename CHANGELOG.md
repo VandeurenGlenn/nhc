@@ -103,3 +103,7 @@
 # v0.7.0
 
 - Add blinds as a cover (temporary minimal support for blinds)
+
+# v0.8.1
+
+- Fix the dimmer to remember the previous value when brightness parameter is omitted ([b01aff0](https://github.com/VandeurenGlenn/nhc/commit/b01aff0ed85d444ad24fdd6c7e62c9f5c59923ec))
